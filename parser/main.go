@@ -1,6 +1,8 @@
 package parser
 
 import (
+	"fmt"
+
 	"github.com/pecet3/aga-script/ast"
 	"github.com/pecet3/aga-script/lexer"
 	"github.com/pecet3/aga-script/token"
@@ -48,6 +50,8 @@ func (p *Parser) parseStatement() ast.Statement {
 	case token.LET:
 		stmt := p.parseLetStatement()
 		return stmt
+	case token.RETURN:
+		return p.parseReturnStatement()
 	default:
 		return nil
 	}
@@ -73,12 +77,33 @@ func (p *Parser) expectPeek(t token.TokenType) bool {
 	if p.peekTokenIs(t) {
 		p.nextToken()
 		return true
+	} else {
+		p.peekError(t)
+		return false
 	}
-	return false
 }
 func (p *Parser) curTokenIs(t token.TokenType) bool {
 	return p.curToken.Type == t
 }
 func (p *Parser) peekTokenIs(t token.TokenType) bool {
 	return p.peekToken.Type == t
+}
+
+func (p *Parser) Errors() []string {
+	return p.errors
+}
+
+func (p *Parser) peekError(t token.TokenType) {
+	p.errors = append(p.errors, fmt.Sprintf(`EXPECETED: %s GOT: %s`, t.String(), p.peekToken.Type.String()))
+}
+
+func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
+	stmt := &ast.ReturnStatement{Token: p.curToken}
+
+	p.nextToken()
+
+	for !p.curTokenIs(token.SEMICOLON) {
+		p.nextToken()
+	}
+	return stmt
 }

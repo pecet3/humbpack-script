@@ -1,5 +1,7 @@
 package token
 
+import "fmt"
+
 type TokenType int
 
 const (
@@ -49,7 +51,7 @@ type Token struct {
 }
 
 var keywords = map[string]TokenType{
-	"aga":    FUNCTION,
+	"fn":     FUNCTION,
 	"let":    LET,
 	"true":   TRUE,
 	"false":  FALSE,
@@ -63,4 +65,40 @@ func LookupIdent(ident string) TokenType {
 		return tok
 	}
 	return IDENT
+}
+
+func (t TokenType) String() string {
+	names := [...]string{
+		ILLEGAL:   "ILLEGAL",
+		EOF:       "EOF",
+		IDENT:     "IDENT",
+		INT:       "INT",
+		ASSIGN:    "ASSIGN",
+		PLUS:      "PLUS",
+		MINUS:     "MINUS",
+		BANG:      "BANG",
+		ASTERISK:  "ASTERISK",
+		SLASH:     "SLASH",
+		LT:        "LT",
+		GT:        "GT",
+		EQ:        "EQ",
+		NOT_EQ:    "NOT_EQ",
+		COMMA:     "COMMA",
+		SEMICOLON: "SEMICOLON",
+		LPAREN:    "LPAREN",
+		RPAREN:    "RPAREN",
+		LBRACE:    "LBRACE",
+		RBRACE:    "RBRACE",
+		FUNCTION:  "FUNCTION",
+		LET:       "LET",
+		TRUE:      "TRUE",
+		FALSE:     "FALSE",
+		IF:        "IF",
+		ELSE:      "ELSE",
+		RETURN:    "RETURN",
+	}
+	if int(t) < len(names) {
+		return names[t]
+	}
+	return fmt.Sprintf("TokenType(%d)", t)
 }
