@@ -3,8 +3,8 @@ package lexer_test
 import (
 	"testing"
 
-	"github.com/pecet3/aga-script/lexer"
-	"github.com/pecet3/aga-script/token"
+	"github.com/pecet3/hmbk-script/lexer"
+	"github.com/pecet3/hmbk-script/token"
 )
 
 func TestNextToken(t *testing.T) {

@@ -1,6 +1,6 @@
 package lexer
 
-import "github.com/pecet3/aga-script/token"
+import "github.com/pecet3/hmbk-script/token"
 
 type Lexer struct {
 	input        string

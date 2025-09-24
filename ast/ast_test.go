@@ -3,7 +3,7 @@ package ast
 import (
 	"testing"
 
-	"github.com/pecet3/aga-script/token"
+	"github.com/pecet3/hmbk-script/token"
 )
 
 func TestString(t *testing.T) {

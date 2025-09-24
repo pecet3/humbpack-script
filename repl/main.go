@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/pecet3/aga-script/lexer"
-	"github.com/pecet3/aga-script/token"
+	"github.com/pecet3/hmbk-script/lexer"
+	"github.com/pecet3/hmbk-script/token"
 )
 
 const PROMPT = ">> "
