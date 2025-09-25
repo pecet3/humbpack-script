@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/pecet3/hmbk-script/evaluation"
 	"github.com/pecet3/hmbk-script/lexer"
 	"github.com/pecet3/hmbk-script/parser"
 )
@@ -31,7 +32,11 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		fmt.Println(program.String())
+		evaluated := evaluation.Eval(program)
+		if evaluated != nil {
+			io.WriteString(out, evaluated.Inspect())
+			io.WriteString(out, "\n")
+		}
 	}
 }
 
