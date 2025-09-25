@@ -6,7 +6,7 @@ import (
 	"io"
 
 	"github.com/pecet3/hmbk-script/lexer"
-	"github.com/pecet3/hmbk-script/token"
+	"github.com/pecet3/hmbk-script/parser"
 )
 
 const PROMPT = ">> "
@@ -23,9 +23,20 @@ func Start(in io.Reader, out io.Writer) {
 
 		line := scanner.Text()
 		l := lexer.New(line)
+		p := parser.New(l)
 
-		for tok := l.NextToken(); tok.Type != token.EOF; tok = l.NextToken() {
-			fmt.Printf("%+v\n", tok)
+		program := p.ParseProgram()
+		if len(p.Errors()) > 0 {
+			printParserErr(out, p.Errors())
+			continue
 		}
+
+		fmt.Println(program.String())
+	}
+}
+
+func printParserErr(out io.Writer, errors []string) {
+	for _, err := range errors {
+		io.WriteString(out, err+"\n")
 	}
 }
