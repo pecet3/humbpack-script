@@ -1,0 +1,10 @@
+let name = "";
+
+input(name);
+
+if (len(name) > 4) {
+    print("hello " + name);
+}
+
+return bash("ls");
+

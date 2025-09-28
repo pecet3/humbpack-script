@@ -11,7 +11,7 @@ const (
 	// Identifiers + literals
 	IDENT // add, foobar, x, y, ...
 	INT
-
+	STRING
 	// Operators
 	ASSIGN
 	PLUS
@@ -69,33 +69,34 @@ func LookupIdent(ident string) TokenType {
 
 func (t TokenType) String() string {
 	names := [...]string{
-		ILLEGAL:   "ILLEGAL",
+		ILLEGAL:   "ILLEGAL", // nielegalny znak
 		EOF:       "EOF",
-		IDENT:     "IDENT",
-		INT:       "INT",
-		ASSIGN:    "ASSIGN",
-		PLUS:      "PLUS",
-		MINUS:     "MINUS",
-		BANG:      "BANG",
-		ASTERISK:  "ASTERISK",
-		SLASH:     "SLASH",
-		LT:        "LT",
-		GT:        "GT",
-		EQ:        "EQ",
-		NOT_EQ:    "NOT_EQ",
-		COMMA:     "COMMA",
-		SEMICOLON: "SEMICOLON",
-		LPAREN:    "LPAREN",
-		RPAREN:    "RPAREN",
-		LBRACE:    "LBRACE",
-		RBRACE:    "RBRACE",
-		FUNCTION:  "FUNCTION",
-		LET:       "LET",
-		TRUE:      "TRUE",
-		FALSE:     "FALSE",
-		IF:        "IF",
-		ELSE:      "ELSE",
-		RETURN:    "RETURN",
+		IDENT:     "id", // identyfikator
+		INT:       "0",  // liczba całkowita (symbolicznie)
+		ASSIGN:    "=",
+		PLUS:      "+",
+		MINUS:     "-",
+		BANG:      "!",
+		ASTERISK:  "*",
+		SLASH:     "/",
+		LT:        "<",
+		GT:        ">",
+		EQ:        "==",
+		NOT_EQ:    "!=",
+		COMMA:     ",",
+		SEMICOLON: ";",
+		LPAREN:    "(",
+		RPAREN:    ")",
+		LBRACE:    "{",
+		RBRACE:    "}",
+		FUNCTION:  "fn",
+		LET:       "let",
+		TRUE:      "true",
+		FALSE:     "false",
+		IF:        "if",
+		ELSE:      "else",
+		RETURN:    "return",
+		STRING:    `"str"`,
 	}
 	if int(t) < len(names) {
 		return names[t]
