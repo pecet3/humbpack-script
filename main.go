@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
+	"strings"
 
 	"github.com/pecet3/hmbk-script/evaluation"
 	"github.com/pecet3/hmbk-script/lexer"
@@ -17,7 +17,12 @@ func main() {
 
 	if len(args) > 0 {
 		fileName := args[0]
-		data, err := ioutil.ReadFile(fileName)
+		fileNameLower := strings.ToLower(fileName)
+		if !strings.Contains(fileNameLower, ".hmbk") {
+			fmt.Println("Wrong file name, it must have a .hmbk extension")
+			return
+		}
+		data, err := os.ReadFile(fileName)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Błąd wczytania pliku: %s\n", err)
 			os.Exit(1)
@@ -27,7 +32,6 @@ func main() {
 		l := lexer.New(string(data))
 		p := parser.New(l)
 		program := p.ParseProgram()
-
 		if len(p.Errors()) > 0 {
 			for _, err := range p.Errors() {
 				fmt.Fprintf(os.Stderr, "Parser error: %s\n", err)
@@ -40,7 +44,6 @@ func main() {
 			fmt.Println(evaluated.Inspect())
 		}
 	} else {
-		// Brak argumentu – uruchamiamy REPL
 		repl.Start(os.Stdin, os.Stdout)
 	}
 }

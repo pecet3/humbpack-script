@@ -14,6 +14,10 @@ var (
 )
 
 func Eval(n ast.Node, env *object.Environment) object.Object {
+	if len(builtinFunctions) == 0 {
+		initBulitInFunctions()
+	}
+
 	switch node := n.(type) {
 	case *ast.Program:
 		return evalProgram(node.Statements, env)
@@ -91,7 +95,7 @@ func isError(obj object.Object) bool {
 	return false
 }
 
-func isThruthy(obj object.Object) bool {
+func isTruthy(obj object.Object) bool {
 	switch obj {
 	case NULL:
 		return false
@@ -160,7 +164,6 @@ func evalIdentifier(
 	if ok {
 		return val
 	}
-
 	if builtin, ok := builtinFunctions[node.Value]; ok {
 		return builtin
 	}
@@ -203,7 +206,7 @@ func evalIfExpression(ie *ast.IfExpression, env *object.Environment) object.Obje
 	if isError(condition) {
 		return condition
 	}
-	if isThruthy(condition) {
+	if isTruthy(condition) {
 		return Eval(ie.Consequence, env)
 	}
 	if ie.Alternative != nil {
@@ -251,6 +254,9 @@ func evalInfixExpression(operator string, left, right object.Object) object.Obje
 	case left.Type() == object.INTEGER && right.Type() == object.INTEGER:
 		return evalIntegerInfixExpression(operator, left, right)
 	case operator == "==":
+		if left.Type() == object.STRING && right.Type() == object.STRING {
+			return boolToObject(left.Inspect() == right.Inspect())
+		}
 		return boolToObject(left == right)
 	case operator == "!=":
 		return boolToObject(left != right)

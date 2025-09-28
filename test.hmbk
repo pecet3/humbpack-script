@@ -1,10 +1,7 @@
-let name = "";
-
-input(name);
-
-if (len(name) > 4) {
-    print("hello " + name);
-}
-
-return bash("ls");
-
+let x = 0
+loop(
+  fn() { let x = x + 1; x < 5; },
+  fn() { 
+    print(x);
+  }
+);
