@@ -34,6 +34,8 @@ const (
 	RPAREN
 	LBRACE
 	RBRACE
+	LBRACKET
+	RBRACKET
 
 	// Keywords
 	FUNCTION
@@ -96,7 +98,9 @@ func (t TokenType) String() string {
 		IF:        "if",
 		ELSE:      "else",
 		RETURN:    "return",
-		STRING:    `"str"`,
+		STRING:    `""""`,
+		LBRACKET:  "[",
+		RBRACKET:  "]",
 	}
 	if int(t) < len(names) {
 		return names[t]

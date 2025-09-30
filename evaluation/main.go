@@ -15,7 +15,7 @@ var (
 
 func Eval(n ast.Node, env *object.Environment) object.Object {
 	if len(builtinFunctions) == 0 {
-		initBulitInFunctions()
+		initBuiltInFunctions()
 	}
 
 	switch node := n.(type) {
@@ -77,6 +77,26 @@ func Eval(n ast.Node, env *object.Environment) object.Object {
 		return applyFunction(function, args)
 	case *ast.StringLiteral:
 		return &object.String{Value: node.Value}
+
+	case *ast.ArrayLiteral:
+		elements := evalExpressions(node.Elements, env)
+
+		if len(elements) == 1 && isError(elements[0]) {
+			return elements[0]
+		}
+
+		return &object.Array{Elements: elements}
+
+	case *ast.IndexExpression:
+		left := Eval(node.Left, env)
+		if isError(left) {
+			return left
+		}
+		index := Eval(node.Index, env)
+		if isError(index) {
+			return index
+		}
+		return evalIndexExpression(left, index)
 	}
 
 	return NULL
@@ -140,6 +160,27 @@ func unwrapReturnValue(obj object.Object) object.Object {
 }
 
 // evals
+
+func evalIndexExpression(left, index object.Object) object.Object {
+	switch {
+	case left.Type() == object.ARRAY && index.Type() == object.INTEGER:
+		return evalArrayIndexExpression(left, index)
+	default:
+		return newError("index operator must be an integer, not: %s", left.Type())
+	}
+}
+
+func evalArrayIndexExpression(left, index object.Object) object.Object {
+	array := left.(*object.Array)
+	idx := index.(*object.Integer).Value
+	max := int64(len(array.Elements) - 1)
+
+	if idx < 0 || idx > max {
+		return NULL
+	}
+
+	return array.Elements[idx]
+}
 
 func evalExpressions(
 	exps []ast.Expression,
