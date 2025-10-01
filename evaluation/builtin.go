@@ -88,9 +88,14 @@ func initBuiltInFunctions() {
 					}
 					arg.Elements = newElements
 					return NULL
+				case *object.Hash:
+					if key, ok := args[1].(object.Hashable); ok {
+						delete(arg.Pairs, key.HashKey())
+					}
 				default:
 					return newError("first argument must be an array in push method")
 				}
+				return NULL
 			},
 		},
 		"delete_index": {
