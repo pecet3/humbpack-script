@@ -29,6 +29,7 @@ const (
 	// Delimiters
 	COMMA
 	SEMICOLON
+	COLON
 
 	LPAREN
 	RPAREN
@@ -101,6 +102,7 @@ func (t TokenType) String() string {
 		STRING:    `""""`,
 		LBRACKET:  "[",
 		RBRACKET:  "]",
+		COLON:     ":",
 	}
 	if int(t) < len(names) {
 		return names[t]

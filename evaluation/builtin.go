@@ -41,6 +41,85 @@ func initBuiltInFunctions() {
 				return NULL
 			},
 		},
+		"append": {
+			Fn: func(args ...object.Object) object.Object {
+				if len(args) < 1 {
+					return newError("wrong number of arguments. got=%d, min=2",
+						len(args))
+				}
+				switch arg := args[0].(type) {
+				case *object.Array:
+					arg.Elements = append(arg.Elements, args[1:]...)
+					return NULL
+				case *object.Hash:
+					if len(args) < 2 {
+						return newError("wrong number of arguments. got=%d, min=3",
+							len(args))
+					}
+					if key, ok := args[1].(object.Hashable); ok {
+						pair := object.HashPair{
+							Key:   args[1],
+							Value: args[2],
+						}
+						arg.Pairs[key.HashKey()] = pair
+						return NULL
+					}
+				default:
+					return newError("first argument must be an array in push method")
+				}
+				return NULL
+			},
+		},
+		"delete": {
+			Fn: func(args ...object.Object) object.Object {
+				if len(args) != 2 {
+					return newError("wrong number of arguments. got=%d, want=2",
+						len(args))
+				}
+				switch arg := args[0].(type) {
+				case *object.Array:
+					seeking := args[1]
+					newElements := []object.Object{}
+					for _, element := range arg.Elements {
+						if element.Inspect() == seeking.Inspect() {
+							continue
+						}
+						newElements = append(newElements, element)
+					}
+					arg.Elements = newElements
+					return NULL
+				default:
+					return newError("first argument must be an array in push method")
+				}
+			},
+		},
+		"delete_index": {
+			Fn: func(args ...object.Object) object.Object {
+				if len(args) != 2 {
+					return newError("wrong number of arguments. got=%d, want=2",
+						len(args))
+				}
+				switch arg := args[0].(type) {
+				case *object.Array:
+					seeking, ok := args[1].(*object.Integer)
+					if !ok {
+						return newError("second argument must be an integer")
+					}
+					if len(arg.Elements)-1 < int(seeking.Value) {
+						return newError("provided index is too high. array has more than %d elements", seeking.Value+1)
+					}
+					left := arg.Elements[:seeking.Value]
+					right := arg.Elements[seeking.Value+1:]
+					newArr := []object.Object{}
+					newArr = append(newArr, left...)
+					newArr = append(newArr, right...)
+					arg.Elements = newArr
+					return NULL
+				default:
+					return newError("first argument must be an array in push method")
+				}
+			},
+		},
 		"len": {
 			Fn: func(args ...object.Object) object.Object {
 				if len(args) != 1 {
