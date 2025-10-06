@@ -106,15 +106,15 @@ func initBuiltInFunctions() {
 				}
 				switch arg := args[0].(type) {
 				case *object.Array:
-					seeking, ok := args[1].(*object.Integer)
+					seeking, ok := args[1].(*object.Number)
 					if !ok {
 						return newError("second argument must be an integer")
 					}
 					if len(arg.Elements)-1 < int(seeking.Value) {
 						return newError("provided index is too high. array has more than %d elements", seeking.Value+1)
 					}
-					left := arg.Elements[:seeking.Value]
-					right := arg.Elements[seeking.Value+1:]
+					left := arg.Elements[:seeking.Int()]
+					right := arg.Elements[seeking.Int()+1:]
 					newArr := []object.Object{}
 					newArr = append(newArr, left...)
 					newArr = append(newArr, right...)
@@ -133,9 +133,9 @@ func initBuiltInFunctions() {
 				}
 				switch arg := args[0].(type) {
 				case *object.String:
-					return &object.Integer{Value: int64(len(arg.Value))}
+					return &object.Number{Value: float64(len(arg.Value))}
 				case *object.Array:
-					return &object.Integer{Value: int64(len(arg.Elements))}
+					return &object.Number{Value: float64(len(arg.Elements))}
 				default:
 					return newError("argument to `len` not supported, got %s",
 						args[0].Type())

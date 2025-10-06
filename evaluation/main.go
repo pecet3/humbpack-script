@@ -24,7 +24,9 @@ func Eval(n ast.Node, env *object.Environment) object.Object {
 	case *ast.ExpressionStatement:
 		return Eval(node.Expression, env)
 	case *ast.IntegerLiteral:
-		return &object.Integer{Value: node.Value}
+		return &object.Number{Value: float64(node.Value)}
+	case *ast.FloatLiteral:
+		return &object.Number{Value: node.Value}
 	case *ast.PrefixExpression:
 		right := Eval(node.Right, env)
 		if isError(right) {
@@ -192,12 +194,12 @@ func evalHashLiteral(node *ast.HashLiteral, env *object.Environment) object.Obje
 
 func evalIndexExpression(left, index object.Object) object.Object {
 	switch {
-	case left.Type() == object.ARRAY && index.Type() == object.INTEGER:
+	case left.Type() == object.ARRAY && index.Type() == object.NUMBER:
 		return evalArrayIndexExpression(left, index)
 	case left.Type() == object.HASH:
 		return evalHashIndexExpression(left, index)
 	default:
-		return newError("index operator must be an integer, not: %s", left.Type())
+		return newError("index operator must be an Number, not: %s", left.Type())
 	}
 }
 
@@ -218,7 +220,7 @@ func evalHashIndexExpression(left, index object.Object) object.Object {
 
 func evalArrayIndexExpression(left, index object.Object) object.Object {
 	array := left.(*object.Array)
-	idx := index.(*object.Integer).Value
+	idx := index.(*object.Number).Int()
 	max := int64(len(array.Elements) - 1)
 
 	if idx < 0 || idx > max {
@@ -328,18 +330,18 @@ func evalBangOperatorExpression(right object.Object) object.Object {
 }
 
 func evalMinusExpression(right object.Object) object.Object {
-	if right.Type() != object.INTEGER {
+	if right.Type() != object.NUMBER {
 		return newError("unknown operator: -%s", right.Type())
 	}
 
-	value := right.(*object.Integer).Value
-	return &object.Integer{Value: -value}
+	value := right.(*object.Number).Value
+	return &object.Number{Value: -value}
 }
 
 func evalInfixExpression(operator string, left, right object.Object) object.Object {
 	switch {
-	case left.Type() == object.INTEGER && right.Type() == object.INTEGER:
-		return evalIntegerInfixExpression(operator, left, right)
+	case left.Type() == object.NUMBER && right.Type() == object.NUMBER:
+		return evalNumberInfixExpression(operator, left, right)
 	case operator == "==":
 		if left.Type() == object.STRING && right.Type() == object.STRING {
 			return boolToObject(left.Inspect() == right.Inspect())
@@ -358,20 +360,20 @@ func evalInfixExpression(operator string, left, right object.Object) object.Obje
 	}
 }
 
-func evalIntegerInfixExpression(
+func evalNumberInfixExpression(
 	operator string, left, right object.Object,
 ) object.Object {
-	leftVal := left.(*object.Integer).Value
-	rightVal := right.(*object.Integer).Value
+	leftVal := left.(*object.Number).Value
+	rightVal := right.(*object.Number).Value
 	switch operator {
 	case "+":
-		return &object.Integer{Value: leftVal + rightVal}
+		return &object.Number{Value: leftVal + rightVal}
 	case "-":
-		return &object.Integer{Value: leftVal - rightVal}
+		return &object.Number{Value: leftVal - rightVal}
 	case "*":
-		return &object.Integer{Value: leftVal * rightVal}
+		return &object.Number{Value: leftVal * rightVal}
 	case "/":
-		return &object.Integer{Value: leftVal / rightVal}
+		return &object.Number{Value: leftVal / rightVal}
 	case "<":
 		return boolToObject(leftVal < rightVal)
 	case ">":

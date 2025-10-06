@@ -1,6 +1,10 @@
 package lexer
 
-import "github.com/pecet3/hmbk-script/token"
+import (
+	"strings"
+
+	"github.com/pecet3/hmbk-script/token"
+)
 
 type Lexer struct {
 	input        string
@@ -81,8 +85,12 @@ func (l *Lexer) NextToken() token.Token {
 			tok.Type = token.LookupIdent(tok.Literal)
 			return tok
 		} else if isDigit(l.ch) {
-			tok.Type = token.INT
 			tok.Literal = l.readNumber()
+			if strings.Contains(tok.Literal, ".") {
+				tok.Type = token.FLOAT
+			} else {
+				tok.Type = token.INT
+			}
 			return tok
 		} else {
 			tok = newToken(token.ILLEGAL, l.ch)
@@ -141,11 +149,22 @@ func (l *Lexer) readNumber() string {
 	for isDigit(l.ch) {
 		l.readChar()
 	}
+	if l.ch == '.' {
+		l.readChar()
+
+		for isDigit(l.ch) {
+			l.readChar()
+		}
+	}
 	return l.input[position:l.position]
 }
 
 func isLetter(ch byte) bool {
 	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_'
+}
+
+func isDot(ch byte) bool {
+	return '.' == ch
 }
 
 func isDigit(ch byte) bool {

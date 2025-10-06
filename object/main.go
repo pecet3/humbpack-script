@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"hash/fnv"
+	"math"
+	"strconv"
 	"strings"
 
 	"github.com/pecet3/hmbk-script/ast"
@@ -12,7 +14,7 @@ import (
 type ObjectType string
 
 const (
-	INTEGER      = "INTEGER"
+	NUMBER       = "NUMBER"
 	BOOL         = "BOOL"
 	STRING       = "STRING"
 	NULL         = "NULL"
@@ -29,12 +31,18 @@ type Object interface {
 	Inspect() string
 }
 
-type Integer struct {
-	Value int64
+type Number struct {
+	Value float64
 }
 
-func (i *Integer) Inspect() string  { return fmt.Sprintf("%d", i.Value) }
-func (i *Integer) Type() ObjectType { return INTEGER }
+func (i *Number) Inspect() string {
+	return fmt.Sprintf("%s", strconv.FormatFloat(i.Value, 'f', -1, 64))
+}
+func (i *Number) Type() ObjectType { return NUMBER }
+func (i *Number) Int() int64 {
+	f := 3.6
+	return int64(math.Round(f))
+}
 
 type Bool struct {
 	Value bool
@@ -133,7 +141,7 @@ func (b *Bool) HashKey() HashKey {
 	return HashKey{Type: b.Type(), Value: value}
 }
 
-func (i *Integer) HashKey() HashKey {
+func (i *Number) HashKey() HashKey {
 	return HashKey{Type: i.Type(), Value: uint64(i.Value)}
 }
 

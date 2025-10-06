@@ -27,6 +27,8 @@ if (5 < 10) {
 
 10 == 10;
 10 != 9;
+
+let float = 10.0;
 `
 
 	tests := []struct {
@@ -105,6 +107,11 @@ if (5 < 10) {
 		{token.INT, "10"},
 		{token.NOT_EQ, "!="},
 		{token.INT, "9"},
+		{token.SEMICOLON, ";"},
+		{token.LET, "let"},
+		{token.IDENT, "float"},
+		{token.ASSIGN, "="},
+		{token.FLOAT, "10.0"},
 		{token.SEMICOLON, ";"},
 		{token.EOF, ""},
 	}

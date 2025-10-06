@@ -11,6 +11,7 @@ const (
 	// Identifiers + literals
 	IDENT // add, foobar, x, y, ...
 	INT
+	FLOAT
 	STRING
 	// Operators
 	ASSIGN
@@ -76,6 +77,7 @@ func (t TokenType) String() string {
 		EOF:       "EOF",
 		IDENT:     "id", // identyfikator
 		INT:       "0",  // liczba całkowita (symbolicznie)
+		FLOAT:     "0.0",
 		ASSIGN:    "=",
 		PLUS:      "+",
 		MINUS:     "-",
