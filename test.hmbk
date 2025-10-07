@@ -1,16 +1,17 @@
-let names = ["Jakub", "Wiktor", "Aleczek"];
 
-let i = len(names);
-let x = -1;
-
-
-loop(
-  fn() { let x = x + 1; x < i; },
-  fn() { 
-    if (names[x] == "Aleczek"){
-      print("Gwiazda Twitcha: ")
-    }
-    print(names[x]);
+let math = {
+  "number": 4,
+  "add_to_number" : fn(x){
+    return math["number"] + 2;
   }
-);
+}
 
+print(math["add_to_number"](2));
+
+const z = 454;
+const add = fn(x){
+  const z = 10;
+  return z + x;
+}
+
+print(add(4))

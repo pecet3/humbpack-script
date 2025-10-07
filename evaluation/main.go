@@ -61,6 +61,27 @@ func Eval(n ast.Node, env *object.Environment) object.Object {
 			return val
 		}
 		env.Set(node.Name.Value, val)
+	case *ast.ConstStatement:
+		val := Eval(node.Value, env)
+		if isError(val) {
+			return val
+		}
+		env.SetConst(node.Name.Value, val)
+	case *ast.AssignmentStatement:
+		val := Eval(node.Value, env)
+		if isError(val) {
+			return val
+		}
+		_, ok := env.Get(node.Name.Value)
+		if !ok {
+			return newError("assignment to undefined variable: %s", node.Name.Value)
+		}
+		isConst := env.IsConst(node.Name.Value)
+		if isConst {
+			return newError("assignment to const variable: %s", node.Name.Value)
+		}
+		env.Set(node.Name.Value, val)
+
 	case *ast.Identifier:
 		return evalIdentifier(node, env)
 	case *ast.FunctionLiteral:

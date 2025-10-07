@@ -163,10 +163,6 @@ func isLetter(ch byte) bool {
 	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_'
 }
 
-func isDot(ch byte) bool {
-	return '.' == ch
-}
-
 func isDigit(ch byte) bool {
 	return '0' <= ch && ch <= '9'
 }

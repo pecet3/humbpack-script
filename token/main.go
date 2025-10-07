@@ -42,6 +42,7 @@ const (
 	// Keywords
 	FUNCTION
 	LET
+	CONST
 	TRUE
 	FALSE
 	IF
@@ -57,6 +58,7 @@ type Token struct {
 var keywords = map[string]TokenType{
 	"fn":     FUNCTION,
 	"let":    LET,
+	"const":  CONST,
 	"true":   TRUE,
 	"false":  FALSE,
 	"if":     IF,
@@ -96,6 +98,7 @@ func (t TokenType) String() string {
 		RBRACE:    "}",
 		FUNCTION:  "fn",
 		LET:       "let",
+		CONST:     "const",
 		TRUE:      "true",
 		FALSE:     "false",
 		IF:        "if",
