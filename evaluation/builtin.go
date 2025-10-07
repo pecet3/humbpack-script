@@ -41,6 +41,16 @@ func initBuiltInFunctions() {
 				return NULL
 			},
 		},
+		"typeof": {
+			Fn: func(args ...object.Object) object.Object {
+				if len(args) != 1 {
+					return newError("wrong number of arguments. got=%d, want=1", len(args))
+				}
+				return &object.String{
+					Value: fmt.Sprintf("%s", args[0].Type()),
+				}
+			},
+		},
 		"append": {
 			Fn: func(args ...object.Object) object.Object {
 				if len(args) < 1 {
@@ -111,7 +121,7 @@ func initBuiltInFunctions() {
 						return newError("second argument must be an integer")
 					}
 					if len(arg.Elements)-1 < int(seeking.Value) {
-						return newError("provided index is too high. array has more than %d elements", seeking.Value+1)
+						return newError("provided index is too high. array has more than %d elements", seeking.Int()+1)
 					}
 					left := arg.Elements[:seeking.Int()]
 					right := arg.Elements[seeking.Int()+1:]

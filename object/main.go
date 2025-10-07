@@ -36,12 +36,11 @@ type Number struct {
 }
 
 func (i *Number) Inspect() string {
-	return fmt.Sprintf("%s", strconv.FormatFloat(i.Value, 'f', -1, 64))
+	return strconv.FormatFloat(i.Value, 'f', -1, 64)
 }
 func (i *Number) Type() ObjectType { return NUMBER }
 func (i *Number) Int() int64 {
-	f := 3.6
-	return int64(math.Round(f))
+	return int64(math.Round(i.Value))
 }
 
 type Bool struct {
