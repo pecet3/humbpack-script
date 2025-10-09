@@ -8,14 +8,14 @@ import (
 )
 
 func TestNextToken(t *testing.T) {
-	input := `let five = 5;
-let ten = 10;
+	input := `mut five = 5;
+mut ten = 10;
 
-let add = fn(x, y) {
+mut add = fn(x, y) {
   x + y;
 };
 
-let result = add(five, ten);
+mut result = add(five, ten);
 !-/*5;
 5 < 10 > 5;
 
@@ -28,24 +28,24 @@ if (5 < 10) {
 10 == 10;
 10 != 9;
 
-let float = 10.0;
+mut float = 10.0;
 `
 
 	tests := []struct {
 		expectedType    token.TokenType
 		expectedLiteral string
 	}{
-		{token.LET, "let"},
+		{token.MUT, "mut"},
 		{token.IDENT, "five"},
 		{token.ASSIGN, "="},
 		{token.INT, "5"},
 		{token.SEMICOLON, ";"},
-		{token.LET, "let"},
+		{token.MUT, "mut"},
 		{token.IDENT, "ten"},
 		{token.ASSIGN, "="},
 		{token.INT, "10"},
 		{token.SEMICOLON, ";"},
-		{token.LET, "let"},
+		{token.MUT, "mut"},
 		{token.IDENT, "add"},
 		{token.ASSIGN, "="},
 		{token.FUNCTION, "fn"},
@@ -61,7 +61,7 @@ let float = 10.0;
 		{token.SEMICOLON, ";"},
 		{token.RBRACE, "}"},
 		{token.SEMICOLON, ";"},
-		{token.LET, "let"},
+		{token.MUT, "mut"},
 		{token.IDENT, "result"},
 		{token.ASSIGN, "="},
 		{token.IDENT, "add"},
@@ -108,7 +108,7 @@ let float = 10.0;
 		{token.NOT_EQ, "!="},
 		{token.INT, "9"},
 		{token.SEMICOLON, ";"},
-		{token.LET, "let"},
+		{token.MUT, "mut"},
 		{token.IDENT, "float"},
 		{token.ASSIGN, "="},
 		{token.FLOAT, "10.0"},

@@ -163,8 +163,8 @@ func (p *Parser) ParseProgram() *ast.Program {
 
 func (p *Parser) parseStatement() ast.Statement {
 	switch p.curToken.Type {
-	case token.LET:
-		stmt := p.parseLetStatement()
+	case token.MUT:
+		stmt := p.parseMutStatement()
 		return stmt
 	case token.CONST:
 		stmt := p.parseConstStatement()
@@ -185,14 +185,14 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 	}
 	return stmt
 }
-func (p *Parser) parseLetStatement() *ast.LetStatement {
-	stmt := &ast.LetStatement{Token: p.curToken}
+func (p *Parser) parseMutStatement() *ast.MutStatement {
+	stmt := &ast.MutStatement{Token: p.curToken}
 	if !p.expectPeek(token.IDENT) {
 		return nil
 	}
 	stmt.Name = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
 	if !p.expectPeek(token.ASSIGN) {
-		return nil
+		p.nextToken()
 	}
 	p.nextToken()
 	stmt.Value = p.parseExpression(LOWEST)
@@ -209,7 +209,7 @@ func (p *Parser) parseConstStatement() *ast.ConstStatement {
 	}
 	stmt.Name = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
 	if !p.expectPeek(token.ASSIGN) {
-		return nil
+		p.nextToken()
 	}
 	p.nextToken()
 	stmt.Value = p.parseExpression(LOWEST)

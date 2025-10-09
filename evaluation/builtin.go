@@ -47,7 +47,7 @@ func initBuiltInFunctions() {
 					return newError("wrong number of arguments. got=%d, want=1", len(args))
 				}
 				return &object.String{
-					Value: fmt.Sprintf("%s", args[0].Type()),
+					Value: strings.ToLower(fmt.Sprintf("%s", args[0].Type())),
 				}
 			},
 		},

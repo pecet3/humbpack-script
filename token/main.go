@@ -41,7 +41,7 @@ const (
 
 	// Keywords
 	FUNCTION
-	LET
+	MUT
 	CONST
 	TRUE
 	FALSE
@@ -57,7 +57,7 @@ type Token struct {
 
 var keywords = map[string]TokenType{
 	"fn":     FUNCTION,
-	"let":    LET,
+	"mut":    MUT,
 	"const":  CONST,
 	"true":   TRUE,
 	"false":  FALSE,
@@ -77,8 +77,8 @@ func (t TokenType) String() string {
 	names := [...]string{
 		ILLEGAL:   "ILLEGAL", // nielegalny znak
 		EOF:       "EOF",
-		IDENT:     "id", // identyfikator
-		INT:       "0",  // liczba całkowita (symbolicznie)
+		IDENT:     "IDENTIFIER", // identyfikator
+		INT:       "0",          // liczba całkowita (symbolicznie)
 		FLOAT:     "0.0",
 		ASSIGN:    "=",
 		PLUS:      "+",
@@ -97,7 +97,7 @@ func (t TokenType) String() string {
 		LBRACE:    "{",
 		RBRACE:    "}",
 		FUNCTION:  "fn",
-		LET:       "let",
+		MUT:       "mut",
 		CONST:     "const",
 		TRUE:      "true",
 		FALSE:     "false",

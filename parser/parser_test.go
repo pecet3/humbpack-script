@@ -9,7 +9,7 @@ import (
 	"github.com/pecet3/hmbk-script/lexer"
 )
 
-func TestLetStatements(t *testing.T) {
+func TestMutStatements(t *testing.T) {
 	tests := []struct {
 		input              string
 		expectedIdentifier string
@@ -32,11 +32,11 @@ func TestLetStatements(t *testing.T) {
 		}
 
 		stmt := program.Statements[0]
-		if !testLetStatement(t, stmt, tt.expectedIdentifier) {
+		if !testMutStatement(t, stmt, tt.expectedIdentifier) {
 			return
 		}
 
-		val := stmt.(*ast.LetStatement).Value
+		val := stmt.(*ast.MutStatement).Value
 		if !testLiteralExpression(t, val, tt.expectedValue) {
 			return
 		}
@@ -672,15 +672,15 @@ func TestCallExpressionParameterParsing(t *testing.T) {
 	}
 }
 
-func testLetStatement(t *testing.T, s ast.Statement, name string) bool {
+func testMutStatement(t *testing.T, s ast.Statement, name string) bool {
 	if s.TokenLiteral() != "let" {
 		t.Errorf("s.TokenLiteral not 'let'. got=%q", s.TokenLiteral())
 		return false
 	}
 
-	letStmt, ok := s.(*ast.LetStatement)
+	letStmt, ok := s.(*ast.MutStatement)
 	if !ok {
-		t.Errorf("s not *ast.LetStatement. got=%T", s)
+		t.Errorf("s not *ast.MutStatement. got=%T", s)
 		return false
 	}
 

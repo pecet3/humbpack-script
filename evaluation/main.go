@@ -55,7 +55,7 @@ func Eval(n ast.Node, env *object.Environment) object.Object {
 			return val
 		}
 		return &object.ReturnValue{Value: val}
-	case *ast.LetStatement:
+	case *ast.MutStatement:
 		val := Eval(node.Value, env)
 		if isError(val) {
 			return val

@@ -1,5 +1,5 @@
 
-let math = {
+mut math = {
   "number": 4,
   "add_to_number" : fn(x){
     return math["number"] + 2;

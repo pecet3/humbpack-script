@@ -9,8 +9,8 @@ import (
 func TestString(t *testing.T) {
 	program := &Program{
 		Statements: []Statement{
-			&LetStatement{
-				Token: token.Token{Type: token.LET, Literal: "let"},
+			&MutStatement{
+				Token: token.Token{Type: token.MUT, Literal: "mut"},
 				Name: &Identifier{
 					Token: token.Token{Type: token.IDENT, Literal: "myVar"},
 					Value: "myVar",
