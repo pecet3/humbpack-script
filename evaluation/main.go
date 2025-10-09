@@ -370,11 +370,21 @@ func evalInfixExpression(operator string, left, right object.Object) object.Obje
 		return boolToObject(left == right)
 	case operator == "!=":
 		return boolToObject(left != right)
+	case left.Type() == object.STRING && right.Type() == object.STRING:
+		return evalStringsInfixExpression(operator, left, right)
+	case left.Type() == object.NUMBER && right.Type() == object.STRING:
+		left := left.(*object.Number)
+		right := right.(*object.String)
+
+		return evalStringAndNumberInfixExpression(operator, right, left)
+	case left.Type() == object.STRING && right.Type() == object.NUMBER:
+		left := left.(*object.String)
+		right := right.(*object.Number)
+
+		return evalStringAndNumberInfixExpression(operator, left, right)
 	case left.Type() != right.Type():
 		return newError("type mismatch: %s %s %s",
 			left.Type(), operator, right.Type())
-	case left.Type() == object.STRING && right.Type() == object.STRING:
-		return evalStringInfixExpression(operator, left, right)
 	default:
 		return newError("unknown operator: %s %s %s",
 			left.Type(), operator, right.Type())
@@ -413,7 +423,7 @@ func newError(format string, a ...interface{}) *object.Error {
 	return &object.Error{Message: fmt.Sprintf(format, a...)}
 }
 
-func evalStringInfixExpression(operator string, left, right object.Object) object.Object {
+func evalStringsInfixExpression(operator string, left, right object.Object) object.Object {
 	if operator != "+" {
 		return newError("unknown operator: %s %s %s",
 			left.Type(), operator, right.Type())
@@ -421,4 +431,17 @@ func evalStringInfixExpression(operator string, left, right object.Object) objec
 	leftVal := left.(*object.String).Value
 	rightVal := right.(*object.String).Value
 	return &object.String{Value: leftVal + rightVal}
+}
+
+func evalStringAndNumberInfixExpression(operator string, left *object.String, right *object.Number) object.Object {
+	if operator != "+" {
+		return newError("unknown operator: %s %s %s",
+			left.Type(), operator, right.Type())
+	}
+	return &object.String{Value: left.Value + right.Inspect()}
+}
+
+func isNumber(o object.Object) bool {
+	_, ok := o.(*object.String)
+	return ok
 }

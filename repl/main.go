@@ -35,8 +35,8 @@ const LOGO = cyan + `⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀�
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀  ⠘⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀` + reset
 
 const LINE = brightBlack + "⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒" + reset
-const INFO = brightCyan + italic + `
-Welcome to HMBK SCRIPT REPL
+const INFO = white + italic + `
+Welcome ` + yellow + `to` + brightCyan + ` HMBK SCRIPT ` + bold + magenta + `REPL
 ` + reset
 
 func Start(in io.Reader, out io.Writer) {

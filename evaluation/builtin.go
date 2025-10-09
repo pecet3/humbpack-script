@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 
 	"github.com/pecet3/hmbk-script/object"
@@ -213,6 +214,49 @@ func initBuiltInFunctions() {
 						args[0].Type())
 				}
 				return NULL
+			},
+		},
+		"to_string": {
+			Fn: func(args ...object.Object) object.Object {
+				if len(args) != 1 {
+					return newError("wrong number of arguments. got=%d, want=1",
+						len(args))
+				}
+				return &object.String{
+					Value: args[0].Inspect(),
+				}
+			},
+		},
+		"to_number": {
+			Fn: func(args ...object.Object) object.Object {
+				if len(args) != 1 {
+					return newError("wrong number of arguments. got=%d, want=1",
+						len(args))
+				}
+				obj := args[0]
+				if obj.Type() == object.STRING {
+					val, err := strconv.ParseFloat(obj.Inspect(), 64)
+					if err != nil {
+						return newError("this string cannot be parset into float: %s",
+							args[0].Inspect())
+					}
+					return &object.Number{
+						Value: val,
+					}
+				}
+				if obj.Type() == object.BOOL {
+					b := obj.(*object.Bool)
+					if b.Value {
+						return &object.Number{
+							Value: 1.0,
+						}
+					}
+					return &object.Number{
+						Value: 0.0,
+					}
+				}
+				return newError("cannot convert value: %s to a number",
+					args[0].Inspect())
 			},
 		},
 	}

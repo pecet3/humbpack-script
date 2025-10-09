@@ -9,6 +9,56 @@ import (
 	"github.com/pecet3/hmbk-script/lexer"
 )
 
+func TestParseModuleStatement(t *testing.T) {
+	input := `
+    module math {
+        mut pi = 3.14;
+        mut double = fn(x) { x * 2 };
+    }`
+
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	checkParserErrors(t, p)
+
+	if len(program.Statements) != 1 {
+		t.Fatalf("expected 1 statement, got=%d", len(program.Statements))
+	}
+
+	modStmt, ok := program.Statements[0].(*ast.Module)
+	if !ok {
+		t.Fatalf("expected *ast.Module, got=%T", program.Statements[0])
+	}
+
+	if modStmt.Name != "math" {
+		t.Fatalf("expected module name 'math', got=%q", modStmt.Name)
+	}
+
+	if len(modStmt.Statements) != 2 {
+		t.Fatalf("expected 2 statements inside module, got=%d", len(modStmt.Statements))
+	}
+
+	// Check first statement
+	firstStmt, ok := modStmt.Statements[0].(*ast.MutStatement)
+	if !ok {
+		t.Fatalf("expected first statement to be *ast.MutStatement, got=%T", modStmt.Statements[0])
+	}
+
+	if firstStmt.Name.Value != "pi" {
+		t.Errorf("expected first let name 'pi', got=%q", firstStmt.Name.Value)
+	}
+
+	// Check second statement
+	secondStmt, ok := modStmt.Statements[1].(*ast.MutStatement)
+	if !ok {
+		t.Fatalf("expected second statement to be *ast.MutStatement, got=%T", modStmt.Statements[1])
+	}
+
+	if secondStmt.Name.Value != "double" {
+		t.Errorf("expected second let name 'double', got=%q", secondStmt.Name.Value)
+	}
+}
+
 func TestMutStatements(t *testing.T) {
 	tests := []struct {
 		input              string

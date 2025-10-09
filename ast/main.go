@@ -45,6 +45,28 @@ func (p *Program) String() string {
 	return out.String()
 }
 
+type Module struct {
+	Node
+	Name       string
+	Statements []Statement
+}
+
+func (ls *Module) statementNode() {}
+
+func (p *Module) TokenLiteral() string {
+	return p.Name
+}
+
+func (p *Module) String() string {
+	var out bytes.Buffer
+
+	for _, s := range p.Statements {
+		out.WriteString(s.String())
+	}
+
+	return out.String()
+}
+
 type MutStatement struct {
 	Token token.Token
 	Name  *Identifier

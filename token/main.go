@@ -48,6 +48,9 @@ const (
 	IF
 	ELSE
 	RETURN
+
+	IMPORT
+	MODULE
 )
 
 type Token struct {
@@ -64,6 +67,8 @@ var keywords = map[string]TokenType{
 	"if":     IF,
 	"else":   ELSE,
 	"return": RETURN,
+	"import": IMPORT,
+	"module": MODULE,
 }
 
 func LookupIdent(ident string) TokenType {
@@ -104,6 +109,8 @@ func (t TokenType) String() string {
 		IF:        "if",
 		ELSE:      "else",
 		RETURN:    "return",
+		IMPORT:    "import",
+		MODULE:    "module",
 		STRING:    `""""`,
 		LBRACKET:  "[",
 		RBRACKET:  "]",

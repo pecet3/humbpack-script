@@ -24,6 +24,7 @@ const (
 	BUILTIN      = "BUILTIN"
 	ARRAY        = "ARRAY"
 	HASH         = "HASH"
+	MODULE       = "MODULE"
 )
 
 type Object interface {
@@ -89,6 +90,24 @@ func (f *Function) Inspect() string {
 	out.WriteString(") {\n")
 	out.WriteString(f.Body.String())
 	out.WriteString("\n}")
+	return out.String()
+}
+
+type Module struct {
+	Env *Environment
+}
+
+func (f *Module) Type() ObjectType { return FUNCTION }
+func (f *Module) Inspect() string {
+	var out bytes.Buffer
+	params := []string{}
+	for _, p := range f.Env.consts {
+		params = append(params, p.Inspect())
+	}
+	out.WriteString("module")
+	out.WriteString("{")
+	out.WriteString(strings.Join(params, ", "))
+	out.WriteString("}\n")
 	return out.String()
 }
 

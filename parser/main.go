@@ -153,12 +153,42 @@ func (p *Parser) ParseProgram() *ast.Program {
 	program.Statements = []ast.Statement{}
 
 	for p.curToken.Type != token.EOF {
+		if p.curTokenIs(token.MODULE) {
+			mod := p.ParseModule()
+			if mod != nil {
+				program.Statements = append(program.Statements, mod)
+			}
+			p.nextToken()
+			continue
+		}
 		stmt := p.parseStatement()
 		program.Statements = append(program.Statements, stmt)
 
 		p.nextToken()
 	}
 	return program
+}
+
+func (p *Parser) ParseModule() *ast.Module {
+	module := &ast.Module{}
+	module.Statements = []ast.Statement{}
+
+	if !p.expectPeek(token.IDENT) {
+		return nil
+	}
+	module.Name = p.curToken.Literal
+
+	if !p.expectPeek(token.LBRACE) {
+		return nil
+	}
+	p.nextToken()
+	for !p.peekTokenIs(token.EOF) && !p.curTokenIs(token.RBRACE) {
+		stmt := p.parseStatement()
+		module.Statements = append(module.Statements, stmt)
+
+		p.nextToken()
+	}
+	return module
 }
 
 func (p *Parser) parseStatement() ast.Statement {
@@ -192,7 +222,7 @@ func (p *Parser) parseMutStatement() *ast.MutStatement {
 	}
 	stmt.Name = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
 	if !p.expectPeek(token.ASSIGN) {
-		p.nextToken()
+		return nil
 	}
 	p.nextToken()
 	stmt.Value = p.parseExpression(LOWEST)
@@ -209,7 +239,7 @@ func (p *Parser) parseConstStatement() *ast.ConstStatement {
 	}
 	stmt.Name = &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
 	if !p.expectPeek(token.ASSIGN) {
-		p.nextToken()
+		return nil
 	}
 	p.nextToken()
 	stmt.Value = p.parseExpression(LOWEST)
