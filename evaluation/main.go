@@ -132,17 +132,16 @@ func Eval(n ast.Node, env *object.Environment) object.Object {
 		}
 		return evalIndexExpression(left, index)
 	case *ast.ModuleExpression:
+		me := n.(*ast.ModuleExpression)
 		left := Eval(node.Left, env)
 		if isError(left) {
 			return left
 		}
-		mod, ok := left.(*object.Module)
-		fmt.Println(mod)
-		val, ok := mod.Env.Get(node.String())
-		fmt.Println(val)
-
+		l := me.Index.Value
+		mod := left.(*object.Module)
+		val, ok := mod.Env.Get(l)
 		if !ok {
-			return newError("module %s has no symbol %s", mod.Name, node.String())
+			return newError("module %s has no symbol %s", mod.Name, l)
 		}
 		return val
 	case *ast.HashLiteral:
