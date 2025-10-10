@@ -57,6 +57,26 @@ func (p *Module) TokenLiteral() string {
 	return p.Name
 }
 
+type ImportExpression struct {
+	Token    token.Token // 'import'
+	FilePath string
+}
+
+func (ie *ImportExpression) expressionNode()      {}
+func (ie *ImportExpression) TokenLiteral() string { return ie.Token.Literal }
+func (ie *ImportExpression) String() string       { return "import \"" + ie.FilePath + "\"" }
+
+type ModuleLiteral struct {
+	Token token.Token
+	Name  string
+}
+
+func (hl *ModuleLiteral) expressionNode()      {}
+func (hl *ModuleLiteral) TokenLiteral() string { return hl.Token.Literal }
+func (hl *ModuleLiteral) String() string {
+	return hl.Name
+}
+
 func (p *Module) String() string {
 	var out bytes.Buffer
 
@@ -362,6 +382,24 @@ func (ie *IndexExpression) String() string {
 	out.WriteString("[")
 	out.WriteString(ie.Index.String())
 	out.WriteString("])")
+	return out.String()
+}
+
+type ModuleExpression struct {
+	Token token.Token // The [ token
+	Left  Expression
+	Index *Identifier
+}
+
+func (ie *ModuleExpression) expressionNode()      {}
+func (ie *ModuleExpression) TokenLiteral() string { return ie.Token.Literal }
+func (ie *ModuleExpression) String() string {
+	var out bytes.Buffer
+	out.WriteString("(")
+	out.WriteString(ie.Left.String())
+	out.WriteString("<")
+	out.WriteString(ie.Index.String())
+	out.WriteString(">)")
 	return out.String()
 }
 

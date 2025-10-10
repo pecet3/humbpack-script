@@ -51,6 +51,8 @@ const (
 
 	IMPORT
 	MODULE
+
+	DOT
 )
 
 type Token struct {
@@ -115,6 +117,7 @@ func (t TokenType) String() string {
 		LBRACKET:  "[",
 		RBRACKET:  "]",
 		COLON:     ":",
+		DOT:       ".",
 	}
 	if int(t) < len(names) {
 		return names[t]

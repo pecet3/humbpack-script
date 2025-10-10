@@ -21,6 +21,17 @@ func Eval(n ast.Node, env *object.Environment) object.Object {
 	switch node := n.(type) {
 	case *ast.Program:
 		return evalProgram(node.Statements, env)
+	case *ast.Module:
+		modEnv := object.NewEnclosedEnvironment(env)
+		evalProgram(node.Statements, modEnv)
+		mod, ok := n.(*ast.Module)
+		if !ok {
+			return nil
+		}
+		env.SetModule(mod.Name, &object.Module{
+			Name: mod.Name,
+			Env:  modEnv,
+		})
 	case *ast.ExpressionStatement:
 		return Eval(node.Expression, env)
 	case *ast.IntegerLiteral:
@@ -120,6 +131,20 @@ func Eval(n ast.Node, env *object.Environment) object.Object {
 			return index
 		}
 		return evalIndexExpression(left, index)
+	case *ast.ModuleExpression:
+		left := Eval(node.Left, env)
+		if isError(left) {
+			return left
+		}
+		mod, ok := left.(*object.Module)
+		fmt.Println(mod)
+		val, ok := mod.Env.Get(node.String())
+		fmt.Println(val)
+
+		if !ok {
+			return newError("module %s has no symbol %s", mod.Name, node.String())
+		}
+		return val
 	case *ast.HashLiteral:
 		return evalHashLiteral(node, env)
 	}
@@ -219,6 +244,17 @@ func evalIndexExpression(left, index object.Object) object.Object {
 		return evalArrayIndexExpression(left, index)
 	case left.Type() == object.HASH:
 		return evalHashIndexExpression(left, index)
+	case left.Type() == object.MODULE:
+		strIdx, ok := index.(*object.String)
+		if !ok {
+			return newError("module index must be string, got %s", index.Type())
+		}
+		mod := left.(*object.Module)
+		val, ok := mod.Env.Get(strIdx.Value)
+		if !ok {
+			return newError("module %s has no symbol %s", mod.Name, strIdx.Value)
+		}
+		return val
 	default:
 		return newError("index operator must be an Number, not: %s", left.Type())
 	}
@@ -270,6 +306,10 @@ func evalIdentifier(
 	node *ast.Identifier,
 	env *object.Environment,
 ) object.Object {
+	mod, ok := env.GetModule(node.Value)
+	if ok {
+		return mod
+	}
 	val, ok := env.Get(node.Value)
 	if ok {
 		return val

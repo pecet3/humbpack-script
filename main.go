@@ -39,10 +39,8 @@ func main() {
 			os.Exit(1)
 		}
 
-		evaluated := evaluation.Eval(program, env)
-		if evaluated != nil {
-			fmt.Println(evaluated.Inspect())
-		}
+		evaluation.Eval(program, env)
+
 	} else {
 		repl.Start(os.Stdin, os.Stdout)
 	}

@@ -94,17 +94,18 @@ func (f *Function) Inspect() string {
 }
 
 type Module struct {
-	Env *Environment
+	Name string
+	Env  *Environment
 }
 
-func (f *Module) Type() ObjectType { return FUNCTION }
+func (f *Module) Type() ObjectType { return MODULE }
 func (f *Module) Inspect() string {
 	var out bytes.Buffer
 	params := []string{}
 	for _, p := range f.Env.consts {
 		params = append(params, p.Inspect())
 	}
-	out.WriteString("module")
+	out.WriteString("module ")
 	out.WriteString("{")
 	out.WriteString(strings.Join(params, ", "))
 	out.WriteString("}\n")
