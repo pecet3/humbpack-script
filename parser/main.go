@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 
 	"github.com/pecet3/hmbk-script/ast"
@@ -180,9 +181,13 @@ func (p *Parser) ParseModule() *ast.Module {
 	}
 	module.Name = p.curToken.Literal
 
+	if p.peekTokenIs(token.IMPORT) {
+		return p.ParseImportModule(module)
+	}
 	if !p.expectPeek(token.LBRACE) {
 		return nil
 	}
+
 	p.nextToken()
 	for !p.peekTokenIs(token.EOF) && !p.curTokenIs(token.RBRACE) {
 		stmt := p.parseStatement()
@@ -191,6 +196,45 @@ func (p *Parser) ParseModule() *ast.Module {
 		p.nextToken()
 	}
 	return module
+}
+
+func (p *Parser) ParseImportModule(mod *ast.Module) *ast.Module {
+	p.nextToken()
+
+	if !p.curTokenIs(token.IMPORT) {
+		p.errors = append(p.errors, "expected 'import' after module name")
+		return nil
+	}
+
+	if !p.expectPeek(token.LBRACE) {
+		p.errors = append(p.errors, "expected '{' after import")
+		return nil
+	}
+
+	if !p.expectPeek(token.STRING) {
+		p.errors = append(p.errors, "expected string literal after '{'")
+		return nil
+	}
+	filePath := p.curToken.Literal
+	mod.Path = filePath
+	if !p.expectPeek(token.RBRACE) {
+		p.errors = append(p.errors, "expected '}' after import path")
+		return nil
+	}
+	inp, err := os.ReadFile(filePath)
+	if err != nil {
+		p.errors = append(p.errors, fmt.Sprintf("cannot read file %s: %v", filePath, err))
+		return nil
+	}
+
+	newLexer := lexer.New(string(inp))
+	newParser := New(newLexer)
+	imported := newParser.ParseProgram()
+	if imported != nil {
+
+		mod.Statements = append(mod.Statements, imported.Statements...)
+	}
+	return mod
 }
 
 func (p *Parser) parseStatement() ast.Statement {

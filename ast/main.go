@@ -48,6 +48,7 @@ func (p *Program) String() string {
 type Module struct {
 	Node
 	Name       string
+	Path       string
 	Statements []Statement
 }
 
@@ -55,6 +56,17 @@ func (ls *Module) statementNode() {}
 
 func (p *Module) TokenLiteral() string {
 	return p.Name
+}
+
+type ImportModule struct {
+	Module Module
+	Path   string
+}
+
+func (ls *ImportModule) statementNode() {}
+
+func (p *ImportModule) TokenLiteral() string {
+	return p.Module.Name
 }
 
 type ImportExpression struct {

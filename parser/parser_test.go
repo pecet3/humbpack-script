@@ -14,48 +14,82 @@ func TestParseModuleStatement(t *testing.T) {
     module math {
         mut pi = 3.14;
         mut double = fn(x) { x * 2 };
-    }`
+    }
+    module square {
+        mut pi = 3.14;
+        mut square = fn(x) { x * x };
+    }
+    `
 
 	l := lexer.New(input)
 	p := New(l)
 	program := p.ParseProgram()
 	checkParserErrors(t, p)
 
-	if len(program.Statements) != 1 {
-		t.Fatalf("expected 1 statement, got=%d", len(program.Statements))
+	if len(program.Statements) != 2 {
+		t.Fatalf("expected 2 module statements, got=%d", len(program.Statements))
 	}
 
-	modStmt, ok := program.Statements[0].(*ast.Module)
+	// --- Check first module: math ---
+	modMath, ok := program.Statements[0].(*ast.Module)
 	if !ok {
 		t.Fatalf("expected *ast.Module, got=%T", program.Statements[0])
 	}
 
-	if modStmt.Name != "math" {
-		t.Fatalf("expected module name 'math', got=%q", modStmt.Name)
+	if modMath.Name != "math" {
+		t.Fatalf("expected module name 'math', got=%q", modMath.Name)
 	}
 
-	if len(modStmt.Statements) != 2 {
-		t.Fatalf("expected 2 statements inside module, got=%d", len(modStmt.Statements))
+	if len(modMath.Statements) != 2 {
+		t.Fatalf("expected 2 statements inside module 'math', got=%d", len(modMath.Statements))
 	}
 
-	// Check first statement
-	firstStmt, ok := modStmt.Statements[0].(*ast.MutStatement)
+	// first statement: mut pi = 3.14;
+	firstStmt, ok := modMath.Statements[0].(*ast.MutStatement)
 	if !ok {
-		t.Fatalf("expected first statement to be *ast.MutStatement, got=%T", modStmt.Statements[0])
+		t.Fatalf("expected first statement in 'math' to be *ast.MutStatement, got=%T", modMath.Statements[0])
 	}
-
 	if firstStmt.Name.Value != "pi" {
-		t.Errorf("expected first let name 'pi', got=%q", firstStmt.Name.Value)
+		t.Errorf("expected first variable name 'pi', got=%q", firstStmt.Name.Value)
 	}
 
-	// Check second statement
-	secondStmt, ok := modStmt.Statements[1].(*ast.MutStatement)
+	// second statement: mut double = fn(x) { x * 2 };
+	secondStmt, ok := modMath.Statements[1].(*ast.MutStatement)
 	if !ok {
-		t.Fatalf("expected second statement to be *ast.MutStatement, got=%T", modStmt.Statements[1])
+		t.Fatalf("expected second statement in 'math' to be *ast.MutStatement, got=%T", modMath.Statements[1])
+	}
+	if secondStmt.Name.Value != "double" {
+		t.Errorf("expected second variable name 'double', got=%q", secondStmt.Name.Value)
 	}
 
-	if secondStmt.Name.Value != "double" {
-		t.Errorf("expected second let name 'double', got=%q", secondStmt.Name.Value)
+	// --- Check second module: square ---
+	modSquare, ok := program.Statements[1].(*ast.Module)
+	if !ok {
+		t.Fatalf("expected *ast.Module, got=%T", program.Statements[1])
+	}
+
+	if modSquare.Name != "square" {
+		t.Fatalf("expected module name 'square', got=%q", modSquare.Name)
+	}
+
+	if len(modSquare.Statements) != 2 {
+		t.Fatalf("expected 2 statements inside module 'square', got=%d", len(modSquare.Statements))
+	}
+
+	firstSquareStmt, ok := modSquare.Statements[0].(*ast.MutStatement)
+	if !ok {
+		t.Fatalf("expected first statement in 'square' to be *ast.MutStatement, got=%T", modSquare.Statements[0])
+	}
+	if firstSquareStmt.Name.Value != "pi" {
+		t.Errorf("expected first variable name 'pi' in 'square', got=%q", firstSquareStmt.Name.Value)
+	}
+
+	secondSquareStmt, ok := modSquare.Statements[1].(*ast.MutStatement)
+	if !ok {
+		t.Fatalf("expected second statement in 'square' to be *ast.MutStatement, got=%T", modSquare.Statements[1])
+	}
+	if secondSquareStmt.Name.Value != "square" {
+		t.Errorf("expected second variable name 'square', got=%q", secondSquareStmt.Name.Value)
 	}
 }
 

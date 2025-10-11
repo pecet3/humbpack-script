@@ -1,0 +1,6 @@
+const a = 10;
+
+module math import {"minor.hmbk"}
+
+const b = math.b;
+print(b)

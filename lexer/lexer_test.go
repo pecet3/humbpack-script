@@ -29,6 +29,13 @@ if (5 < 10) {
 10 != 9;
 
 mut float = 10.0;
+
+module math {
+}
+module mathe {
+}
+
+const a = import
 `
 
 	tests := []struct {
@@ -113,6 +120,18 @@ mut float = 10.0;
 		{token.ASSIGN, "="},
 		{token.FLOAT, "10.0"},
 		{token.SEMICOLON, ";"},
+		{token.MODULE, "module"},
+		{token.IDENT, "math"},
+		{token.LBRACE, "{"},
+		{token.RBRACE, "}"},
+		{token.MODULE, "module"},
+		{token.IDENT, "mathe"},
+		{token.LBRACE, "{"},
+		{token.RBRACE, "}"},
+		{token.CONST, "const"},
+		{token.IDENT, "a"},
+		{token.ASSIGN, "="},
+		{token.IMPORT, "import"},
 		{token.EOF, ""},
 	}
 

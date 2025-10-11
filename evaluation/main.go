@@ -16,8 +16,8 @@ var (
 func Eval(n ast.Node, env *object.Environment) object.Object {
 	if len(builtinFunctions) == 0 {
 		initBuiltInFunctions()
+		initModules()
 	}
-
 	switch node := n.(type) {
 	case *ast.Program:
 		return evalProgram(node.Statements, env)
@@ -27,6 +27,9 @@ func Eval(n ast.Node, env *object.Environment) object.Object {
 		mod, ok := n.(*ast.Module)
 		if !ok {
 			return nil
+		}
+		if mod.Path != "" {
+			fmt.Println(1, mod.Path)
 		}
 		env.SetModule(mod.Name, &object.Module{
 			Name: mod.Name,
@@ -108,6 +111,7 @@ func Eval(n ast.Node, env *object.Environment) object.Object {
 		if len(args) == 1 && isError(args[0]) {
 			return args[0]
 		}
+
 		return applyFunction(function, args)
 	case *ast.StringLiteral:
 		return &object.String{Value: node.Value}
@@ -133,13 +137,19 @@ func Eval(n ast.Node, env *object.Environment) object.Object {
 		return evalIndexExpression(left, index)
 	case *ast.ModuleExpression:
 		me := n.(*ast.ModuleExpression)
+		fn, ok := modules[me.Left.String()][me.Index.Value]
+		if ok {
+			return fn
+		}
 		left := Eval(node.Left, env)
 		if isError(left) {
 			return left
 		}
+
 		l := me.Index.Value
 		mod := left.(*object.Module)
-		val, ok := mod.Env.Get(l)
+
+		val, ok := mod.Env.GetNoOuter(l)
 		if !ok {
 			return newError("module %s has no symbol %s", mod.Name, l)
 		}

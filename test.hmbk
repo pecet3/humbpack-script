@@ -1,27 +1,2 @@
-module math { 
-  const limit = 2000; 
-  const print_result = fn(x){
-    print("result is: " +x)
-    return x;
-  };
-  const square = fn(x){
-    return x * x;
-  };
-  const is_limit = fn(x){
-    if (x > limit) {
-      return true;
-    }else{
-      return false;
-    }
-  }
-}
 
-const x = 64;
-
-const x_square = math["square"](x)
-
-math["print_result"](x_square);
-
-print(math["is_limit"](x_square))
-
-print(math.limit)
+math.add(1,2)
