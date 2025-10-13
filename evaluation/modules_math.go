@@ -1,8 +1,6 @@
 package evaluation
 
 import (
-	"fmt"
-
 	"github.com/pecet3/hmbk-script/object"
 )
 
@@ -21,7 +19,6 @@ func moduleMathInit() map[string]*object.Builtin {
 				if !ok1 || !ok2 {
 					return newError("arguments to `add` must be Numbers")
 				}
-				fmt.Println(left, right)
 				return &object.Number{Value: left.Value + right.Value}
 			},
 		},

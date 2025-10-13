@@ -15,6 +15,7 @@ type ObjectType string
 
 const (
 	NUMBER       = "NUMBER"
+	INTEGER      = "INTEGER"
 	BOOL         = "BOOL"
 	STRING       = "STRING"
 	NULL         = "NULL"
@@ -42,6 +43,18 @@ func (i *Number) Inspect() string {
 func (i *Number) Type() ObjectType { return NUMBER }
 func (i *Number) Int() int64 {
 	return int64(math.Round(i.Value))
+}
+
+type Integer struct {
+	Value int64
+}
+
+func (i *Integer) Inspect() string {
+	return fmt.Sprintf("%d", i.Value)
+}
+func (i *Integer) Type() ObjectType { return NUMBER }
+func (i *Integer) Float() float64 {
+	return float64(i.Value)
 }
 
 type Bool struct {

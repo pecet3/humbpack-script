@@ -16,8 +16,13 @@ type VMObject struct {
 
 // VM przechowuje Stack i Heap VM
 type VM struct {
-	Heap  []*VMObject
-	Stack []*VMObject // obiekty w użyciu
+	Heap      []*VMObject
+	Stack     []*VMObject // obiekty w użyciu
+	IntReg    [32]int64
+	StrReg    [32]string
+	FloatReg  [32]float64
+	ObjectReg [32]*VMObject
+	PC        int
 }
 
 // Dodanie obiektu do Heapu VM
