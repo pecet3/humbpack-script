@@ -2,12 +2,15 @@ package repl
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 
+	"github.com/pecet3/hmbk-script/compiler"
 	"github.com/pecet3/hmbk-script/evaluation"
 	"github.com/pecet3/hmbk-script/lexer"
 	"github.com/pecet3/hmbk-script/object"
 	"github.com/pecet3/hmbk-script/parser"
+	"github.com/pecet3/hmbk-script/vm"
 )
 
 const PROMPT = brightBlack + ">> " + reset
@@ -40,7 +43,7 @@ const INFO = white + italic + brightCyan +
 	bold + magenta + `REPL
 ` + reset
 
-func Start(in io.Reader, out io.Writer) {
+func StartEval(in io.Reader, out io.Writer) {
 	io.WriteString(out, LOGO+"\n"+INFO+LINE+"\n")
 	scanner := bufio.NewScanner(in)
 	env := object.NewEnvironment()
@@ -74,6 +77,44 @@ func Start(in io.Reader, out io.Writer) {
 		io.WriteString(out, reset)
 		io.WriteString(out, LINE+"\n")
 
+	}
+}
+func Start(in io.Reader, out io.Writer) {
+	io.WriteString(out, LOGO+"\n"+INFO+LINE+"\n")
+
+	scanner := bufio.NewScanner(in)
+	for {
+		io.WriteString(out, PROMPT)
+		scanned := scanner.Scan()
+		if !scanned {
+			return
+		}
+		line := scanner.Text()
+		l := lexer.New(line)
+		p := parser.New(l)
+		program := p.ParseProgram()
+		if len(p.Errors()) != 0 {
+			printParserErr(out, p.Errors())
+			continue
+		}
+		comp := compiler.New()
+		err := comp.Compile(program)
+		if err != nil {
+			fmt.Fprintf(out, "Woops! Compilation failed:\n %s\n", err)
+			continue
+		}
+		machine := vm.New(comp.Bytecode())
+		err = machine.Run()
+		if err != nil {
+			fmt.Fprintf(out, "Woops! Executing bytecode failed:\n %s\n", err)
+			continue
+		}
+		lastPopped := machine.LastPoppedStackElem()
+		if lastPopped == nil {
+			continue
+		}
+		io.WriteString(out, lastPopped.Inspect())
+		io.WriteString(out, "\n")
 	}
 }
 

@@ -3,115 +3,117 @@ package vm
 import (
 	"fmt"
 
+	"github.com/pecet3/hmbk-script/code"
+	"github.com/pecet3/hmbk-script/compiler"
 	"github.com/pecet3/hmbk-script/object"
 )
 
-// VMObject reprezentuje obiekt w naszej VM
-type VMObject struct {
-	Name     string
-	Value    object.Object
-	Marked   bool
-	Children []*VMObject // referencje do innych obiektów
-}
+const stackSize = 2048
 
-// VM przechowuje Stack i Heap VM
 type VM struct {
-	Heap      []*VMObject
-	Stack     []*VMObject // obiekty w użyciu
-	IntReg    [32]int64
-	StrReg    [32]string
-	FloatReg  [32]float64
-	ObjectReg [32]*VMObject
-	PC        int
+	consts       []object.Object
+	stack        []object.Object
+	sp           int
+	ip           int
+	instructions []byte
 }
 
-// Dodanie obiektu do Heapu VM
-func (vm *VM) Alloc(name string) *VMObject {
-	obj := &VMObject{Name: name}
-	vm.Heap = append(vm.Heap, obj)
-	return obj
-}
-
-// Mark: oznacz obiekty osiągalne ze Stacka
-func (vm *VM) mark() {
-	var markObj func(obj *VMObject)
-	markObj = func(obj *VMObject) {
-		if obj == nil || obj.Marked {
-			return
-		}
-		obj.Marked = true
-		for _, child := range obj.Children {
-			markObj(child)
-		}
-	}
-
-	for _, root := range vm.Stack {
-		markObj(root)
+func New(bytecode *compiler.Bytecode) *VM {
+	return &VM{
+		consts:       bytecode.Constants,
+		stack:        make([]object.Object, stackSize),
+		sp:           0,
+		ip:           0,
+		instructions: bytecode.Instructions,
 	}
 }
-
-// Sweep: usuwa nieoznaczone obiekty z Heapu
-func (vm *VM) sweep() {
-	var newHeap []*VMObject
-	for _, obj := range vm.Heap {
-		if obj.Marked {
-			obj.Marked = false // reset marker na przyszły cykl
-			newHeap = append(newHeap, obj)
-		} else {
-			fmt.Println("Collecting:", obj.Name)
-		}
+func (vm *VM) StackTop() object.Object {
+	if vm.sp == 0 {
+		return nil
 	}
-	vm.Heap = newHeap
+	return vm.stack[vm.sp-1]
 }
-func (obj *VMObject) AddChildren(children ...*VMObject) {
-	obj.Children = append(obj.Children, children...)
-}
-
-// Usuwa podane dzieci z obiektu
-func (obj *VMObject) RemoveChildren(children ...*VMObject) {
-	newChildren := obj.Children[:0] // tworzymy nowy slice, zachowując pojemność
-	for _, c := range obj.Children {
-		remove := false
-		for _, r := range children {
-			if c == r {
-				remove = true
-				break
+func (vm *VM) Run() error {
+	for ip := 0; ip < len(vm.instructions); ip++ {
+		op := code.Opcode(vm.instructions[ip])
+		switch op {
+		case code.OpConstant:
+			constIndex := int(code.ReadUint16(vm.instructions[ip+1:]))
+			ip += 2
+			if constIndex >= len(vm.consts) {
+				return fmt.Errorf("constant index out of range: %d", constIndex)
 			}
-		}
-		if !remove {
-			newChildren = append(newChildren, c)
+			if err := vm.push(vm.consts[constIndex]); err != nil {
+				return err
+			}
+		case code.OpPop:
+			vm.pop()
+
+		case code.OpAdd, code.OpSub, code.OpMul, code.OpDiv:
+			err := vm.executeBinaryOperation(op)
+			if err != nil {
+				return err
+			}
+		default:
+			return fmt.Errorf("unknown opcode: %d", op)
 		}
 	}
-	obj.Children = newChildren
-}
-func (vm *VM) GC() {
-	vm.mark()
-	vm.sweep()
+	return nil
 }
 
-func Run() {
-	vm := &VM{}
+func (vm *VM) push(o object.Object) error {
+	if vm.sp >= stackSize {
+		return fmt.Errorf("stack overflow")
+	}
+	vm.stack[vm.sp] = o
+	vm.sp++
+	return nil
+}
 
-	// Tworzymy obiekty
-	a := vm.Alloc("A")
-	b := vm.Alloc("B")
-	c := vm.Alloc("C")
-	d := vm.Alloc("D")
+func (vm *VM) pop() object.Object {
+	if vm.sp == 0 {
+		return nil
+	}
+	vm.sp--
+	o := vm.stack[vm.sp]
+	vm.stack[vm.sp] = nil
+	return o
+}
+func (vm *VM) LastPoppedStackElem() object.Object {
+	return vm.stack[vm.sp]
+}
 
-	// Tworzymy referencje
-	a.AddChildren(b, c)
-	b.AddChildren(d)
+func (vm *VM) executeBinaryOperation(op code.Opcode) error {
+	right := vm.pop()
+	left := vm.pop()
+	leftType := left.Type()
+	rightType := right.Type()
+	fmt.Println(leftType, rightType)
 
-	// Stack wskazuje na obiekt A
-	vm.Stack = []*VMObject{a}
-
-	fmt.Println("Heap przed GC:", len(vm.Heap)) // 4
-	vm.GC()                                     // Mark & Sweep
-	fmt.Println("Heap po GC:", len(vm.Heap))    // 4, wszystkie osiągalne
-
-	// Usuwamy referencję do B
-	a.Children = []*VMObject{c}
-	fmt.Println("Usuwamy referencję do B")
-	vm.GC()                                  // GC powinien zebrać B i D
-	fmt.Println("Heap po GC:", len(vm.Heap)) // 2
+	if leftType == object.NUMBER && rightType == object.NUMBER {
+		return vm.executeBinaryIntegerOperation(op, left, right)
+	}
+	return fmt.Errorf("unsupported types for binary operation: %s %s",
+		leftType, rightType)
+}
+func (vm *VM) executeBinaryIntegerOperation(
+	op code.Opcode,
+	left, right object.Object,
+) error {
+	leftValue := left.(*object.Number).Value
+	rightValue := right.(*object.Number).Value
+	var result float64
+	switch op {
+	case code.OpAdd:
+		result = leftValue + rightValue
+	case code.OpSub:
+		result = leftValue - rightValue
+	case code.OpMul:
+		result = leftValue * rightValue
+	case code.OpDiv:
+		result = leftValue / rightValue
+	default:
+		return fmt.Errorf("unknown integer operator: %d", op)
+	}
+	return vm.push(&object.Number{Value: result})
 }
