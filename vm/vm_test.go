@@ -16,14 +16,14 @@ func parse(input string) *ast.Program {
 	p := parser.New(l)
 	return p.ParseProgram()
 }
-func testNumberObject(expected float64, actual object.Object) error {
-	result, ok := actual.(*object.Number)
+func testIntegerObject(expected int64, actual object.Object) error {
+	result, ok := actual.(*object.Integer)
 	if !ok {
 		return fmt.Errorf("object is not Integer. got=%T (%+v)",
 			actual, actual)
 	}
 	if result.Value != expected {
-		return fmt.Errorf("object has wrong value. got=%f, want=%f",
+		return fmt.Errorf("object has wrong value. got=%d, want=%d",
 			result.Value, expected)
 	}
 	return nil
@@ -43,6 +43,8 @@ func runVmTests(t *testing.T, tests []vmTestCase) {
 		if err != nil {
 			t.Fatalf("compiler error: %s", err)
 		}
+		fmt.Println(comp.Bytecode())
+
 		vm := New(comp.Bytecode())
 		err = vm.Run()
 		if err != nil {
@@ -59,12 +61,29 @@ func testExpectedObject(
 ) {
 	t.Helper()
 	switch expected := expected.(type) {
-	case float64:
-		err := testNumberObject(expected, actual)
+	case int:
+		err := testIntegerObject(int64(expected), actual)
 		if err != nil {
 			t.Errorf("testIntegerObject failed: %s", err)
 		}
+	case bool:
+		err := testBooleanObject(bool(expected), actual)
+		if err != nil {
+			t.Errorf("testBooleanObject failed: %s", err)
+		}
 	}
+}
+func testBooleanObject(expected bool, actual object.Object) error {
+	result, ok := actual.(*object.Bool)
+	if !ok {
+		return fmt.Errorf("object is not Boolean. got=%T (%+v)",
+			actual, actual)
+	}
+	if result.Value != expected {
+		return fmt.Errorf("object has wrong value. got=%t, want=%t",
+			result.Value, expected)
+	}
+	return nil
 }
 func TestIntegerArithmetic(t *testing.T) {
 	tests := []vmTestCase{
@@ -80,6 +99,29 @@ func TestIntegerArithmetic(t *testing.T) {
 		{"5 * 2 + 10", 20},
 		{"5 + 2 * 10", 25},
 		{"5 * (2 + 10)", 60},
+	}
+	runVmTests(t, tests)
+}
+func TestBooleanExpressions(t *testing.T) {
+	tests := []vmTestCase{
+		// [...]
+		{"1 < 2", true},
+		{"1 > 2", false},
+		{"1 < 1", false},
+		{"1 > 1", false},
+		{"1 == 1", true},
+		{"1 != 1", false},
+		{"1 == 2", false},
+		{"1 != 2", true},
+		{"true == true", true},
+		{"false == false", true},
+		{"true == false", false},
+		{"true != false", true},
+		{"false != true", true},
+		{"(1 < 2) == true", true},
+		{"(1 < 2) == false", false},
+		{"(1 > 2) == true", false},
+		{"(1 > 2) == false", true},
 	}
 	runVmTests(t, tests)
 }

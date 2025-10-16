@@ -39,7 +39,7 @@ const LOGO = cyan + `⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀�
 
 const LINE = brightBlack + "⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒" + reset
 const INFO = white + italic + brightCyan +
-	bold + underline + `HmbK` + reset + brightGreen + ` SCRIPT ` +
+	bold + underline + `HmbK` + brightGreen + ` SCRIPT ` + reset +
 	bold + magenta + `REPL
 ` + reset
 
@@ -109,11 +109,11 @@ func Start(in io.Reader, out io.Writer) {
 			fmt.Fprintf(out, "Woops! Executing bytecode failed:\n %s\n", err)
 			continue
 		}
-		lastPopped := machine.LastPoppedStackElem()
-		if lastPopped == nil {
+		stackTop := machine.LastPoppedStackElem()
+		if stackTop == nil {
 			continue
 		}
-		io.WriteString(out, lastPopped.Inspect())
+		io.WriteString(out, stackTop.Inspect())
 		io.WriteString(out, "\n")
 	}
 }

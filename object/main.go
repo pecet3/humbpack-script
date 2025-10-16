@@ -52,7 +52,7 @@ type Integer struct {
 func (i *Integer) Inspect() string {
 	return fmt.Sprintf("%d", i.Value)
 }
-func (i *Integer) Type() ObjectType { return NUMBER }
+func (i *Integer) Type() ObjectType { return INTEGER }
 func (i *Integer) Float() float64 {
 	return float64(i.Value)
 }
