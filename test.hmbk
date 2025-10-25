@@ -1,3 +1,8 @@
+mut name = "";
 
-const result = math.add(1,2)
-print(result)
+print("podaje imie: ");
+input(name);
+
+if (name == "radek"){
+    print("siema radek")
+}
