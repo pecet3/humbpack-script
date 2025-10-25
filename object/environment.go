@@ -4,7 +4,7 @@ type Environment struct {
 	store   map[string]Object
 	consts  map[string]Object
 	modules map[string]Object
-	public map[string]Object
+	public  map[string]Object
 	outer   *Environment
 }
 
@@ -81,7 +81,7 @@ func (e *Environment) WithOnlyPublic() {
 	e.store = nil
 	newConsts := make(map[string]Object)
 	for k, v := range e.consts {
-		if 
+
 		newConsts[k] = v
 	}
 	e.consts = newConsts

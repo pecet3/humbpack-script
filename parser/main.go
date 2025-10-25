@@ -230,9 +230,15 @@ func (p *Parser) ParseImportModule(mod *ast.Module) *ast.Module {
 	newLexer := lexer.New(string(inp))
 	newParser := New(newLexer)
 	imported := newParser.ParseProgram()
-	if imported != nil {
 
-		mod.Statements = append(mod.Statements, imported.Statements...)
+	if imported != nil {
+		for _, imp := range imported.Statements {
+			if stmt, ok := imp.(*ast.ConstStatement); ok {
+				if stmt.IsExport {
+					mod.Statements = append(mod.Statements, stmt)
+				}
+			}
+		}
 	}
 	return mod
 }

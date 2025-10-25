@@ -1,6 +1,5 @@
 module counter import {"minor.hmbk"}
 
-counter.hello("a")
 
 mut c = counter.counter;
 
@@ -8,4 +7,3 @@ c = counter.increment(c,20)
 
 print(c)
 
-print(counter.test)

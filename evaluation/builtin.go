@@ -28,7 +28,7 @@ func initBuiltInFunctions() {
 					return newError("arguments to `loop` must be functions")
 				}
 
-				env := object.NewEnclosedEnvironment(conditionFunc.Env)
+				env := object.NewClosedEnvironment(conditionFunc.Env)
 
 				for {
 					cond := Eval(conditionFunc.Body, env)

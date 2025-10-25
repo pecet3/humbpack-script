@@ -22,7 +22,7 @@ func Eval(n ast.Node, env *object.Environment) object.Object {
 	case *ast.Program:
 		return evalProgram(node.Statements, env)
 	case *ast.Module:
-		modEnv := object.NewEnclosedEnvironment(env)
+		modEnv := object.NewClosedEnvironment(env)
 		evalProgram(node.Statements, modEnv)
 		mod, ok := n.(*ast.Module)
 		if !ok {
@@ -202,7 +202,7 @@ func extendFunctionEnv(
 	fn *object.Function,
 	args []object.Object,
 ) *object.Environment {
-	env := object.NewEnclosedEnvironment(fn.Env)
+	env := object.NewClosedEnvironment(fn.Env)
 	for paramIdx, param := range fn.Parameters {
 		env.Set(param.Value, args[paramIdx])
 	}
