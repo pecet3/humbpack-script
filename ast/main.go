@@ -122,9 +122,10 @@ func (ls *MutStatement) String() string {
 }
 
 type ConstStatement struct {
-	Token token.Token
-	Name  *Identifier
-	Value Expression
+	Token    token.Token
+	Name     *Identifier
+	Value    Expression
+	IsExport bool
 }
 
 func (cs *ConstStatement) statementNode()       {}

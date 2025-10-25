@@ -1,1 +1,11 @@
-const b = 555
+@ const counter = 20;
+
+const increment = fn(x,y){
+    x = x + y;
+    return x;
+}
+
+const hello = fn(x){
+    print("hello" + x)
+}
+

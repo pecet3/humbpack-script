@@ -1,8 +1,1 @@
-mut name = "";
-
-print("podaje imie: ");
-input(name);
-
-if (name == "radek"){
-    print("siema radek")
-}
+@ const test = 1;

@@ -243,7 +243,15 @@ func (p *Parser) parseStatement() ast.Statement {
 		stmt := p.parseMutStatement()
 		return stmt
 	case token.CONST:
-		stmt := p.parseConstStatement()
+		stmt := p.parseConstStatement(false)
+		return stmt
+	case token.EXPORT:
+		p.nextToken()
+		if p.curToken.Type != token.CONST {
+			p.errors = append(p.errors, "expected 'const' after 'export'")
+			return nil
+		}
+		stmt := p.parseConstStatement(true)
 		return stmt
 	case token.RETURN:
 		return p.parseReturnStatement()
@@ -278,8 +286,8 @@ func (p *Parser) parseMutStatement() *ast.MutStatement {
 	return stmt
 }
 
-func (p *Parser) parseConstStatement() *ast.ConstStatement {
-	stmt := &ast.ConstStatement{Token: p.curToken}
+func (p *Parser) parseConstStatement(isExport bool) *ast.ConstStatement {
+	stmt := &ast.ConstStatement{Token: p.curToken, IsExport: isExport}
 	if !p.expectPeek(token.IDENT) {
 		return nil
 	}

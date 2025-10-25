@@ -28,9 +28,6 @@ func Eval(n ast.Node, env *object.Environment) object.Object {
 		if !ok {
 			return nil
 		}
-		if mod.Path != "" {
-			fmt.Println(1, mod.Path)
-		}
 		env.SetModule(mod.Name, &object.Module{
 			Name: mod.Name,
 			Env:  modEnv,

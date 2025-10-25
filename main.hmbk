@@ -1,6 +1,11 @@
-const a = 10;
+module counter import {"minor.hmbk"}
 
-module math import {"minor.hmbk"}
+counter.hello("a")
 
-const b = math.b;
-print(b)
+mut c = counter.counter;
+
+c = counter.increment(c,20)
+
+print(c)
+
+print(counter.test)

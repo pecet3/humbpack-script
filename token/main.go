@@ -51,6 +51,7 @@ const (
 
 	IMPORT
 	MODULE
+	EXPORT
 
 	DOT
 )
@@ -118,6 +119,7 @@ func (t TokenType) String() string {
 		RBRACKET:  "]",
 		COLON:     ":",
 		DOT:       ".",
+		EXPORT:    "@",
 	}
 	if int(t) < len(names) {
 		return names[t]
