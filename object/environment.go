@@ -1,11 +1,12 @@
 package object
 
 type Environment struct {
-	store   map[string]Object
-	consts  map[string]Object
-	modules map[string]Object
-	public  map[string]Object
-	outer   *Environment
+	store          map[string]Object
+	consts         map[string]Object
+	modules        map[string]Object
+	public         map[string]Object
+	outer          *Environment
+	BuiltinObjects map[string]Object
 }
 
 func (e *Environment) Get(name string) (Object, bool) {
@@ -75,7 +76,15 @@ func NewEnvironment() *Environment {
 	c := make(map[string]Object)
 	m := make(map[string]Object)
 	p := make(map[string]Object)
-	return &Environment{store: s, consts: c, modules: m, public: p, outer: nil}
+	bo := make(map[string]Object)
+	return &Environment{
+		store:          s,
+		consts:         c,
+		modules:        m,
+		public:         p,
+		BuiltinObjects: bo,
+		outer:          nil,
+	}
 }
 func NewClosedEnvironment(outer *Environment) *Environment {
 	env := NewEnvironment()

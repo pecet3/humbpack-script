@@ -138,10 +138,16 @@ func Eval(n ast.Node, env *object.Environment) object.Object {
 		return evalIndexExpression(left, index)
 	case *ast.ModuleExpression:
 		me := n.(*ast.ModuleExpression)
-		fn, ok := modules[me.Left.String()][me.Index.Value]
+		bMod, ok := modules[me.Left.String()]
 		if ok {
-			return fn
+			l := me.Index.Value
+			val, ok := bMod.Env.Get(l)
+			if !ok {
+				return newError("buildin module %s has no symbol %s", me.Left.String(), l)
+			}
+			return val
 		}
+
 		left := Eval(node.Left, env)
 		if isError(left) {
 			return left

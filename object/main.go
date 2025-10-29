@@ -14,19 +14,29 @@ import (
 type ObjectType string
 
 const (
-	NUMBER       = "NUMBER"
-	INTEGER      = "INTEGER"
-	BOOL         = "BOOL"
-	STRING       = "STRING"
-	NULL         = "NULL"
-	RETURN_VALUE = "RETURN_VALUE"
-	ERROR        = "ERROR"
-	FUNCTION     = "FUNCTION"
-	BUILTIN      = "BUILTIN"
-	ARRAY        = "ARRAY"
-	HASH         = "HASH"
-	MODULE       = "MODULE"
+	NUMBER        = "NUMBER"
+	INTEGER       = "INTEGER"
+	BOOL          = "BOOL"
+	STRING        = "STRING"
+	NULL          = "NULL"
+	RETURN_VALUE  = "RETURN_VALUE"
+	ERROR         = "ERROR"
+	FUNCTION      = "FUNCTION"
+	BUILTIN       = "BUILTIN"
+	ARRAY         = "ARRAY"
+	HASH          = "HASH"
+	MODULE        = "MODULE"
+	BULTIN_OBJECT = "BUILTIN_OBJECT"
 )
+
+type BuiltinObject struct {
+	Value interface{}
+}
+
+func (bo *BuiltinObject) Type() ObjectType { return BULTIN_OBJECT }
+func (bo *BuiltinObject) Inspect() string {
+	return fmt.Sprintf("%v", bo.Value)
+}
 
 type Object interface {
 	Type() ObjectType
