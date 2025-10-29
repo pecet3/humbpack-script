@@ -1,1 +1,16 @@
-print(http.hello)
+http.set("test",1)
+
+
+
+
+const result = http.listen("127.0.0.1:8082", fn(){
+    mut num = 2
+
+    print(num)
+
+    num = http.get("test")
+
+    return num
+})
+
+print(result)

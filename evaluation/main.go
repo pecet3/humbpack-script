@@ -138,7 +138,7 @@ func Eval(n ast.Node, env *object.Environment) object.Object {
 		return evalIndexExpression(left, index)
 	case *ast.ModuleExpression:
 		me := n.(*ast.ModuleExpression)
-		bMod, ok := modules[me.Left.String()]
+		bMod, ok := builtInModules[me.Left.String()]
 		if ok {
 			l := me.Index.Value
 			val, ok := bMod.Env.Get(l)
