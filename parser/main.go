@@ -232,13 +232,7 @@ func (p *Parser) ParseImportModule(mod *ast.Module) *ast.Module {
 	imported := newParser.ParseProgram()
 
 	if imported != nil {
-		for _, imp := range imported.Statements {
-			if stmt, ok := imp.(*ast.ConstStatement); ok {
-				if stmt.IsExport {
-					mod.Statements = append(mod.Statements, stmt)
-				}
-			}
-		}
+		mod.Statements = append(mod.Statements, imported.Statements...)
 	}
 	return mod
 }

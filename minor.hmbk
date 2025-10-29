@@ -1,6 +1,6 @@
 @ const counter = 20;
 
-const increment = fn(x,y){
+@ const increment = fn(x,y){
     x = x + y;
     return x;
 }

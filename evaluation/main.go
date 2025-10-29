@@ -77,7 +77,11 @@ func Eval(n ast.Node, env *object.Environment) object.Object {
 		if isError(val) {
 			return val
 		}
+		if node.IsExport {
+			env.SetPublicConst(node.Name.Value, val)
+		}
 		env.SetConst(node.Name.Value, val)
+
 	case *ast.AssignmentStatement:
 		val := Eval(node.Value, env)
 		if isError(val) {
@@ -146,9 +150,12 @@ func Eval(n ast.Node, env *object.Environment) object.Object {
 		l := me.Index.Value
 		mod := left.(*object.Module)
 
-		val, ok := mod.Env.GetNoOuter(l)
+		val, ok := mod.Env.GetPublic(l)
 		if !ok {
-			return newError("module %s has no symbol %s", mod.Name, l)
+			if _, ok := mod.Env.GetMutNoOuter(l); ok {
+				return newError("cannot access non-const symbol %s from module %s", l, mod.Name)
+			}
+			return newError("module %s has no public symbol %s", mod.Name, l)
 		}
 		return val
 	case *ast.HashLiteral:

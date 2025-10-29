@@ -39,8 +39,16 @@ func main() {
 			os.Exit(1)
 		}
 
-		evaluation.Eval(program, env)
+		evaluated := evaluation.Eval(program, env)
 
+		if evaluated != nil {
+			_, isErr := evaluated.(*object.Error)
+			if isErr {
+				fmt.Fprintf(os.Stderr, "%s\n", evaluated.Inspect())
+				os.Exit(1)
+			}
+
+		}
 	} else {
 		repl.Start(os.Stdin, os.Stdout)
 	}

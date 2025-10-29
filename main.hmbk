@@ -1,9 +1,12 @@
 module counter import {"minor.hmbk"}
 
-
 mut c = counter.counter;
 
+print(c)
+
 c = counter.increment(c,20)
+
+counter.hello("a")
 
 print(c)
 

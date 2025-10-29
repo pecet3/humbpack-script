@@ -22,6 +22,11 @@ func (e *Environment) Get(name string) (Object, bool) {
 	return obj, ok
 }
 
+func (e *Environment) GetPublic(name string) (Object, bool) {
+	obj, ok := e.public[name]
+	return obj, ok
+}
+
 func (e *Environment) GetNoOuter(name string) (Object, bool) {
 	obj, ok := e.store[name]
 	if !ok {
@@ -69,7 +74,8 @@ func NewEnvironment() *Environment {
 	s := make(map[string]Object)
 	c := make(map[string]Object)
 	m := make(map[string]Object)
-	return &Environment{store: s, consts: c, modules: m, outer: nil}
+	p := make(map[string]Object)
+	return &Environment{store: s, consts: c, modules: m, public: p, outer: nil}
 }
 func NewClosedEnvironment(outer *Environment) *Environment {
 	env := NewEnvironment()
