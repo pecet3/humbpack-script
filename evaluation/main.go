@@ -190,13 +190,15 @@ func isGlobalError(obj object.Object) bool {
 }
 
 func isTruthy(obj object.Object) bool {
-	switch obj {
-	case NULL:
+	switch obj.Type() {
+	case object.NULL:
 		return false
-	case TRUE:
-		return true
-	case FALSE:
-		return false
+	case object.BOOL:
+		if obj.Inspect() == "true" {
+			return true
+		} else {
+			return false
+		}
 	default:
 		return true
 	}

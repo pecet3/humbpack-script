@@ -41,3 +41,41 @@ func goValueToObject(v interface{}) object.Object {
 		return &object.String{Value: fmt.Sprintf("%v", val)}
 	}
 }
+
+func objectToGoValue(obj object.Object) interface{} {
+	switch val := obj.(type) {
+
+	case *object.String:
+		return val.Value
+
+	case *object.Integer:
+		return val.Value
+
+	case *object.Number:
+		return val.Value
+
+	case *object.Bool:
+		return val.Value
+
+	case *object.Null:
+		return nil
+
+	case *object.Array:
+		arr := make([]interface{}, len(val.Elements))
+		for i, elem := range val.Elements {
+			arr[i] = objectToGoValue(elem)
+		}
+		return arr
+
+	case *object.Hash:
+		m := make(map[string]interface{})
+		for _, pair := range val.Pairs {
+			key := pair.Key.Inspect() // w Hash key to zwykle string
+			m[key] = objectToGoValue(pair.Value)
+		}
+		return m
+
+	default:
+		return val.Inspect()
+	}
+}
