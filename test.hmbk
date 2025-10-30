@@ -1,11 +1,32 @@
 
+const tt = fn(){
+     if (1 + 1 == 2) {
+        print(2)
+    }else{
+                print(1)
+
+    }
+}
+
+tt()
+
 const map = {
     "test": 1
 }
 
-http.handle("/",fn(){
-    
+http.handle("/",fn(req){
+    const result = http.get_json(req)
+
+    if (is_err(result)) {
+        print(result)
+        return "error"
+    }else{
+                print(1)
+
+    }
     return "<h1>"+map["test"]+"</h1>"
 })
+
+
 
 http.listen("127.0.0.1:8082")

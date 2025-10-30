@@ -19,13 +19,13 @@ func initBuiltInFunctions() {
 		"loop": {
 			Fn: func(args ...object.Object) object.Object {
 				if len(args) != 2 {
-					return newError("wrong number of arguments. got=%d, want=2", len(args))
+					return newGlobalError("wrong number of arguments. got=%d, want=2", len(args))
 				}
 
 				conditionFunc, ok1 := args[0].(*object.Function)
 				bodyFunc, ok2 := args[1].(*object.Function)
 				if !ok1 || !ok2 {
-					return newError("arguments to `loop` must be functions")
+					return newGlobalError("arguments to `loop` must be functions")
 				}
 
 				env := object.NewClosedEnvironment(conditionFunc.Env)
@@ -42,10 +42,20 @@ func initBuiltInFunctions() {
 				return NULL
 			},
 		},
+		"is_err": {
+			Fn: func(args ...object.Object) object.Object {
+				if len(args) != 1 {
+					return newGlobalError("wrong number of arguments. got=%d, want=1", len(args))
+				}
+				return &object.Bool{
+					Value: isError(args[0]),
+				}
+			},
+		},
 		"typeof": {
 			Fn: func(args ...object.Object) object.Object {
 				if len(args) != 1 {
-					return newError("wrong number of arguments. got=%d, want=1", len(args))
+					return newGlobalError("wrong number of arguments. got=%d, want=1", len(args))
 				}
 				return &object.String{
 					Value: strings.ToLower(fmt.Sprintf("%s", args[0].Type())),
@@ -55,7 +65,7 @@ func initBuiltInFunctions() {
 		"append": {
 			Fn: func(args ...object.Object) object.Object {
 				if len(args) < 1 {
-					return newError("wrong number of arguments. got=%d, min=2",
+					return newGlobalError("wrong number of arguments. got=%d, min=2",
 						len(args))
 				}
 				switch arg := args[0].(type) {
@@ -64,7 +74,7 @@ func initBuiltInFunctions() {
 					return NULL
 				case *object.Hash:
 					if len(args) < 2 {
-						return newError("wrong number of arguments. got=%d, min=3",
+						return newGlobalError("wrong number of arguments. got=%d, min=3",
 							len(args))
 					}
 					if key, ok := args[1].(object.Hashable); ok {
@@ -76,7 +86,7 @@ func initBuiltInFunctions() {
 						return NULL
 					}
 				default:
-					return newError("first argument must be an array in push method")
+					return newGlobalError("first argument must be an array in push method")
 				}
 				return NULL
 			},
@@ -84,7 +94,7 @@ func initBuiltInFunctions() {
 		"delete": {
 			Fn: func(args ...object.Object) object.Object {
 				if len(args) != 2 {
-					return newError("wrong number of arguments. got=%d, want=2",
+					return newGlobalError("wrong number of arguments. got=%d, want=2",
 						len(args))
 				}
 				switch arg := args[0].(type) {
@@ -104,7 +114,7 @@ func initBuiltInFunctions() {
 						delete(arg.Pairs, key.HashKey())
 					}
 				default:
-					return newError("first argument must be an array in push method")
+					return newGlobalError("first argument must be an array in push method")
 				}
 				return NULL
 			},
@@ -112,17 +122,17 @@ func initBuiltInFunctions() {
 		"delete_index": {
 			Fn: func(args ...object.Object) object.Object {
 				if len(args) != 2 {
-					return newError("wrong number of arguments. got=%d, want=2",
+					return newGlobalError("wrong number of arguments. got=%d, want=2",
 						len(args))
 				}
 				switch arg := args[0].(type) {
 				case *object.Array:
 					seeking, ok := args[1].(*object.Number)
 					if !ok {
-						return newError("second argument must be an integer")
+						return newGlobalError("second argument must be an integer")
 					}
 					if len(arg.Elements)-1 < int(seeking.Value) {
-						return newError("provided index is too high. array has more than %d elements", seeking.Int()+1)
+						return newGlobalError("provided index is too high. array has more than %d elements", seeking.Int()+1)
 					}
 					left := arg.Elements[:seeking.Int()]
 					right := arg.Elements[seeking.Int()+1:]
@@ -132,14 +142,14 @@ func initBuiltInFunctions() {
 					arg.Elements = newArr
 					return NULL
 				default:
-					return newError("first argument must be an array in push method")
+					return newGlobalError("first argument must be an array in push method")
 				}
 			},
 		},
 		"len": {
 			Fn: func(args ...object.Object) object.Object {
 				if len(args) != 1 {
-					return newError("wrong number of arguments. got=%d, want=1",
+					return newGlobalError("wrong number of arguments. got=%d, want=1",
 						len(args))
 				}
 				switch arg := args[0].(type) {
@@ -148,7 +158,7 @@ func initBuiltInFunctions() {
 				case *object.Array:
 					return &object.Number{Value: float64(len(arg.Elements))}
 				default:
-					return newError("argument to `len` not supported, got %s",
+					return newGlobalError("argument to `len` not supported, got %s",
 						args[0].Type())
 				}
 			},
@@ -156,7 +166,7 @@ func initBuiltInFunctions() {
 		"print": {
 			Fn: func(args ...object.Object) object.Object {
 				if len(args) != 1 {
-					return newError("wrong number of arguments. got=%d, want=1",
+					return newGlobalError("wrong number of arguments. got=%d, want=1",
 						len(args))
 				}
 				for i, arg := range args {
@@ -171,7 +181,7 @@ func initBuiltInFunctions() {
 		"input": {
 			Fn: func(args ...object.Object) object.Object {
 				if len(args) != 1 {
-					return newError("wrong number of arguments. got=%d, want=1",
+					return newGlobalError("wrong number of arguments. got=%d, want=1",
 						len(args))
 				}
 				switch arg := args[0].(type) {
@@ -180,14 +190,14 @@ func initBuiltInFunctions() {
 					line, err := reader.ReadString('\n')
 					if err != nil {
 						if err != io.EOF {
-							return newError("error reading input: %s", err.Error())
+							return newGlobalError("error reading input: %s", err.Error())
 						}
 					}
 					line = strings.TrimRight(line, "\r\n")
 					arg.Value = line
 					return &object.String{Value: line}
 				default:
-					return newError("argument to `input` not supported, got %s",
+					return newGlobalError("argument to `input` not supported, got %s",
 						args[0].Type())
 				}
 			},
@@ -195,22 +205,22 @@ func initBuiltInFunctions() {
 		"bash": {
 			Fn: func(args ...object.Object) object.Object {
 				if len(args) != 1 {
-					return newError("wrong number of arguments. got=%d, want=1",
+					return newGlobalError("wrong number of arguments. got=%d, want=1",
 						len(args))
 				}
 				switch arg := args[0].(type) {
 				case *object.String:
 					cmd := exec.Command("bash", "-c", arg.Inspect())
 					if cmd.Err != nil {
-						return newError("%s", cmd.Err.Error())
+						return newGlobalError("%s", cmd.Err.Error())
 					}
 					output, err := cmd.Output()
 					if err != nil {
-						return newError("%s", err.Error())
+						return newGlobalError("%s", err.Error())
 					}
 					fmt.Println(string(output))
 				default:
-					return newError("argument to `bash` not supported, got %s",
+					return newGlobalError("argument to `bash` not supported, got %s",
 						args[0].Type())
 				}
 				return NULL
@@ -219,7 +229,7 @@ func initBuiltInFunctions() {
 		"to_string": {
 			Fn: func(args ...object.Object) object.Object {
 				if len(args) != 1 {
-					return newError("wrong number of arguments. got=%d, want=1",
+					return newGlobalError("wrong number of arguments. got=%d, want=1",
 						len(args))
 				}
 				return &object.String{
@@ -230,14 +240,14 @@ func initBuiltInFunctions() {
 		"to_number": {
 			Fn: func(args ...object.Object) object.Object {
 				if len(args) != 1 {
-					return newError("wrong number of arguments. got=%d, want=1",
+					return newGlobalError("wrong number of arguments. got=%d, want=1",
 						len(args))
 				}
 				obj := args[0]
 				if obj.Type() == object.STRING {
 					val, err := strconv.ParseFloat(obj.Inspect(), 64)
 					if err != nil {
-						return newError("this string cannot be parset into float: %s",
+						return newGlobalError("this string cannot be parset into float: %s",
 							args[0].Inspect())
 					}
 					return &object.Number{
@@ -255,7 +265,7 @@ func initBuiltInFunctions() {
 						Value: 0.0,
 					}
 				}
-				return newError("cannot convert value: %s to a number",
+				return newGlobalError("cannot convert value: %s to a number",
 					args[0].Inspect())
 			},
 		},

@@ -21,6 +21,7 @@ const (
 	NULL          = "NULL"
 	RETURN_VALUE  = "RETURN_VALUE"
 	ERROR         = "ERROR"
+	GLOBAL_ERROR  = "GLOBAL_ERROR"
 	FUNCTION      = "FUNCTION"
 	BUILTIN       = "BUILTIN"
 	ARRAY         = "ARRAY"
@@ -92,7 +93,14 @@ type Error struct {
 }
 
 func (e *Error) Type() ObjectType { return ERROR }
-func (e *Error) Inspect() string  { return "ERROR: " + e.Message }
+func (e *Error) Inspect() string  { return "" + e.Message }
+
+type GlobalError struct {
+	Message string
+}
+
+func (e *GlobalError) Type() ObjectType { return GLOBAL_ERROR }
+func (e *GlobalError) Inspect() string  { return "GLOBAL ERROR: " + e.Message }
 
 type Function struct {
 	Parameters []*ast.Identifier

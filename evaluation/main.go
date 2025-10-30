@@ -1,8 +1,6 @@
 package evaluation
 
 import (
-	"fmt"
-
 	"github.com/pecet3/hmbk-script/ast"
 	"github.com/pecet3/hmbk-script/object"
 )
@@ -40,7 +38,7 @@ func Eval(n ast.Node, env *object.Environment) object.Object {
 		return &object.Number{Value: node.Value}
 	case *ast.PrefixExpression:
 		right := Eval(node.Right, env)
-		if isError(right) {
+		if isGlobalError(right) {
 			return right
 		}
 		return evalPrefixExpression(node.Operator, right)
@@ -48,11 +46,11 @@ func Eval(n ast.Node, env *object.Environment) object.Object {
 		return boolToObject(node.Value)
 	case *ast.InfixExpression:
 		left := Eval(node.Left, env)
-		if isError(left) {
+		if isGlobalError(left) {
 			return left
 		}
 		right := Eval(node.Right, env)
-		if isError(right) {
+		if isGlobalError(right) {
 			return right
 		}
 		return evalInfixExpression(node.Operator, left, right)
@@ -62,19 +60,19 @@ func Eval(n ast.Node, env *object.Environment) object.Object {
 		return evalIfExpression(node, env)
 	case *ast.ReturnStatement:
 		val := Eval(node.ReturnValue, env)
-		if isError(val) {
+		if isGlobalError(val) {
 			return val
 		}
 		return &object.ReturnValue{Value: val}
 	case *ast.MutStatement:
 		val := Eval(node.Value, env)
-		if isError(val) {
+		if isGlobalError(val) {
 			return val
 		}
 		env.Set(node.Name.Value, val)
 	case *ast.ConstStatement:
 		val := Eval(node.Value, env)
-		if isError(val) {
+		if isGlobalError(val) {
 			return val
 		}
 		if node.IsExport {
@@ -84,16 +82,16 @@ func Eval(n ast.Node, env *object.Environment) object.Object {
 
 	case *ast.AssignmentStatement:
 		val := Eval(node.Value, env)
-		if isError(val) {
+		if isGlobalError(val) {
 			return val
 		}
 		_, ok := env.Get(node.Name.Value)
 		if !ok {
-			return newError("assignment to undefined variable: %s", node.Name.Value)
+			return newGlobalError("assignment to undefined variable: %s", node.Name.Value)
 		}
 		isConst := env.IsConst(node.Name.Value)
 		if isConst {
-			return newError("assignment to const variable: %s", node.Name.Value)
+			return newGlobalError("assignment to const variable: %s", node.Name.Value)
 		}
 		env.Set(node.Name.Value, val)
 
@@ -105,11 +103,11 @@ func Eval(n ast.Node, env *object.Environment) object.Object {
 		return &object.Function{Parameters: params, Env: env, Body: body}
 	case *ast.CallExpression:
 		function := Eval(node.Function, env)
-		if isError(function) {
+		if isGlobalError(function) {
 			return function
 		}
 		args := evalExpressions(node.Arguments, env)
-		if len(args) == 1 && isError(args[0]) {
+		if len(args) == 1 && isGlobalError(args[0]) {
 			return args[0]
 		}
 
@@ -120,7 +118,7 @@ func Eval(n ast.Node, env *object.Environment) object.Object {
 	case *ast.ArrayLiteral:
 		elements := evalExpressions(node.Elements, env)
 
-		if len(elements) == 1 && isError(elements[0]) {
+		if len(elements) == 1 && isGlobalError(elements[0]) {
 			return elements[0]
 		}
 
@@ -128,11 +126,11 @@ func Eval(n ast.Node, env *object.Environment) object.Object {
 
 	case *ast.IndexExpression:
 		left := Eval(node.Left, env)
-		if isError(left) {
+		if isGlobalError(left) {
 			return left
 		}
 		index := Eval(node.Index, env)
-		if isError(index) {
+		if isGlobalError(index) {
 			return index
 		}
 		return evalIndexExpression(left, index)
@@ -143,13 +141,13 @@ func Eval(n ast.Node, env *object.Environment) object.Object {
 			l := me.Index.Value
 			val, ok := bMod.Env.Get(l)
 			if !ok {
-				return newError("buildin module %s has no symbol %s", me.Left.String(), l)
+				return newGlobalError("buildin module %s has no symbol %s", me.Left.String(), l)
 			}
 			return val
 		}
 
 		left := Eval(node.Left, env)
-		if isError(left) {
+		if isGlobalError(left) {
 			return left
 		}
 
@@ -159,9 +157,9 @@ func Eval(n ast.Node, env *object.Environment) object.Object {
 		val, ok := mod.Env.GetPublic(l)
 		if !ok {
 			if _, ok := mod.Env.GetMutNoOuter(l); ok {
-				return newError("cannot access non-const symbol %s from module %s", l, mod.Name)
+				return newGlobalError("cannot access non-const symbol %s from module %s", l, mod.Name)
 			}
-			return newError("module %s has no public symbol %s", mod.Name, l)
+			return newGlobalError("module %s has no public symbol %s", mod.Name, l)
 		}
 		return val
 	case *ast.HashLiteral:
@@ -180,6 +178,13 @@ func boolToObject(input bool) object.Object {
 func isError(obj object.Object) bool {
 	if obj != nil {
 		return obj.Type() == object.ERROR
+	}
+	return false
+}
+
+func isGlobalError(obj object.Object) bool {
+	if obj != nil {
+		return obj.Type() == object.GLOBAL_ERROR
 	}
 	return false
 }
@@ -208,7 +213,7 @@ func applyFunction(fn object.Object, args []object.Object) object.Object {
 	case *object.Builtin:
 		return fn.Fn(args...)
 	default:
-		return newError("not a function: %s", fn.Type())
+		return newGlobalError("not a function: %s", fn.Type())
 	}
 }
 func extendFunctionEnv(
@@ -235,18 +240,18 @@ func evalHashLiteral(node *ast.HashLiteral, env *object.Environment) object.Obje
 
 	for keyNode, valueNode := range node.Pairs {
 		key := Eval(keyNode, env)
-		if isError(key) {
+		if isGlobalError(key) {
 			return key
 		}
 
 		hashKey, ok := key.(object.Hashable)
 
 		if !ok {
-			return newError("unusable as hash key: %s", key.Type())
+			return newGlobalError("unusable as hash key: %s", key.Type())
 		}
 
 		value := Eval(valueNode, env)
-		if isError(value) {
+		if isGlobalError(value) {
 			return value
 		}
 
@@ -266,16 +271,16 @@ func evalIndexExpression(left, index object.Object) object.Object {
 	case left.Type() == object.MODULE:
 		strIdx, ok := index.(*object.String)
 		if !ok {
-			return newError("module index must be string, got %s", index.Type())
+			return newGlobalError("module index must be string, got %s", index.Type())
 		}
 		mod := left.(*object.Module)
 		val, ok := mod.Env.Get(strIdx.Value)
 		if !ok {
-			return newError("module %s has no symbol %s", mod.Name, strIdx.Value)
+			return newGlobalError("module %s has no symbol %s", mod.Name, strIdx.Value)
 		}
 		return val
 	default:
-		return newError("index operator must be an Number, not: %s", left.Type())
+		return newGlobalError("index operator must be an Number, not: %s", left.Type())
 	}
 }
 
@@ -284,7 +289,7 @@ func evalHashIndexExpression(left, index object.Object) object.Object {
 
 	key, ok := index.(object.Hashable)
 	if !ok {
-		return newError("unusable as hash key: %s", index.Type())
+		return newGlobalError("unusable as hash key: %s", index.Type())
 	}
 	pair, ok := hashObject.Pairs[key.HashKey()]
 	if !ok {
@@ -313,7 +318,7 @@ func evalExpressions(
 	var result []object.Object
 	for _, e := range exps {
 		evaluated := Eval(e, env)
-		if isError(evaluated) {
+		if isGlobalError(evaluated) {
 			return []object.Object{evaluated}
 		}
 		result = append(result, evaluated)
@@ -337,7 +342,7 @@ func evalIdentifier(
 		return builtin
 	}
 
-	return newError("identifier not found: " + node.Value)
+	return newGlobalError("identifier not found: " + node.Value)
 }
 
 func evalProgram(stmts []ast.Statement, env *object.Environment) object.Object {
@@ -372,7 +377,7 @@ func evalBlockStatement(stmts []ast.Statement, env *object.Environment) object.O
 
 func evalIfExpression(ie *ast.IfExpression, env *object.Environment) object.Object {
 	condition := Eval(ie.Condition, env)
-	if isError(condition) {
+	if isGlobalError(condition) {
 		return condition
 	}
 	if isTruthy(condition) {
@@ -391,7 +396,7 @@ func evalPrefixExpression(operator string, right object.Object) object.Object {
 	case "-":
 		return evalMinusExpression(right)
 	default:
-		return newError("unknown operator: %s%s", operator, right.Type())
+		return newGlobalError("unknown operator: %s%s", operator, right.Type())
 	}
 
 }
@@ -411,7 +416,7 @@ func evalBangOperatorExpression(right object.Object) object.Object {
 
 func evalMinusExpression(right object.Object) object.Object {
 	if right.Type() != object.NUMBER {
-		return newError("unknown operator: -%s", right.Type())
+		return newGlobalError("unknown operator: -%s", right.Type())
 	}
 
 	value := right.(*object.Number).Value
@@ -442,10 +447,10 @@ func evalInfixExpression(operator string, left, right object.Object) object.Obje
 
 		return evalStringAndNumberInfixExpression(operator, left, right)
 	case left.Type() != right.Type():
-		return newError("type mismatch: %s %s %s",
+		return newGlobalError("type mismatch: %s %s %s",
 			left.Type(), operator, right.Type())
 	default:
-		return newError("unknown operator: %s %s %s",
+		return newGlobalError("unknown operator: %s %s %s",
 			left.Type(), operator, right.Type())
 	}
 }
@@ -473,18 +478,14 @@ func evalNumberInfixExpression(
 	case "!=":
 		return boolToObject(leftVal != rightVal)
 	default:
-		return newError("unknown operator: %s %s %s",
+		return newGlobalError("unknown operator: %s %s %s",
 			left.Type(), operator, right.Type())
 	}
 }
 
-func newError(format string, a ...interface{}) *object.Error {
-	return &object.Error{Message: fmt.Sprintf(format, a...)}
-}
-
 func evalStringsInfixExpression(operator string, left, right object.Object) object.Object {
 	if operator != "+" {
-		return newError("unknown operator: %s %s %s",
+		return newGlobalError("unknown operator: %s %s %s",
 			left.Type(), operator, right.Type())
 	}
 	leftVal := left.(*object.String).Value
@@ -494,13 +495,8 @@ func evalStringsInfixExpression(operator string, left, right object.Object) obje
 
 func evalStringAndNumberInfixExpression(operator string, left *object.String, right *object.Number) object.Object {
 	if operator != "+" {
-		return newError("unknown operator: %s %s %s",
+		return newGlobalError("unknown operator: %s %s %s",
 			left.Type(), operator, right.Type())
 	}
 	return &object.String{Value: left.Value + right.Inspect()}
-}
-
-func isNumber(o object.Object) bool {
-	_, ok := o.(*object.String)
-	return ok
 }

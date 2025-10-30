@@ -42,7 +42,7 @@ func main() {
 		evaluated := evaluation.Eval(program, env)
 
 		if evaluated != nil {
-			_, isErr := evaluated.(*object.Error)
+			_, isErr := evaluated.(*object.GlobalError)
 			if isErr {
 				fmt.Fprintf(os.Stderr, "%s\n", evaluated.Inspect())
 				os.Exit(1)
