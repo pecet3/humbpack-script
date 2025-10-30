@@ -7,14 +7,16 @@ import (
 	"github.com/pecet3/hmbk-script/object"
 )
 
-func Http() *object.Environment {
+const (
+	MUX = "MUX"
+)
+
+func ModHttp() *object.Environment {
 	env := object.NewEnvironment()
 
-	env.SetConst("hello", &object.String{
-		Value: "hello world",
-	})
+	srv := http.NewServeMux()
 
-	env.SetConst("listen", &object.Builtin{
+	env.SetConst("handle", &object.Builtin{
 		Fn: func(args ...object.Object) object.Object {
 
 			if len(args) != 2 {
@@ -23,20 +25,47 @@ func Http() *object.Environment {
 			}
 			switch arg := args[0].(type) {
 			case *object.String:
-				addr := arg.Value
 
-				srv := http.NewServeMux()
-				srv.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
-					fn := args[1].(*object.Function)
-					result := Eval(fn.Body, fn.Env)
+				fn, ok := args[1].(*object.Function)
+				if !ok {
+					return newError("second argument for handler should be a function")
+				}
+
+				srv.HandleFunc(arg.Value, func(w http.ResponseWriter, r *http.Request) {
+					env.SetConst("req_host", &object.String{
+						Value: r.Host,
+					})
+
+					fnEnv := object.NewClosedEnvironment(fn.Env)
+					result := Eval(fn.Body, fnEnv)
+
 					w.Write([]byte(result.Inspect()))
 				})
+				return NULL
+			default:
+				return newError("argument to `len` not supported, got %s",
+					args[0].Type())
+			}
+
+		},
+	})
+
+	env.SetConst("listen", &object.Builtin{
+		Fn: func(args ...object.Object) object.Object {
+
+			if len(args) != 1 {
+				return newError("wrong number of arguments. got=%d, want=1",
+					len(args))
+			}
+			switch arg := args[0].(type) {
+			case *object.String:
+				addr := arg.Value
 
 				if err := http.ListenAndServe(addr, srv); err != nil {
 					fmt.Printf("Error starting server: %s\n", err)
 				}
 
-				return &object.String{Value: fmt.Sprintf("Server started at %s", addr)}
+				return NULL
 			default:
 				return newError("argument to `len` not supported, got %s",
 					args[0].Type())

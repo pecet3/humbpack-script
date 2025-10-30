@@ -10,7 +10,7 @@ func initModules() {
 	builtInModules = map[string]*object.Module{
 		"http": {
 			Name: "http",
-			Env:  Http(),
+			Env:  ModHttp(),
 		},
 	}
 }
