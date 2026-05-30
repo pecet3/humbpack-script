@@ -33,6 +33,14 @@ func (vm *VM) LastPoppedStackElem() object.Object {
 	fmt.Println(vm.stack[vm.sp])
 	return vm.stack[vm.sp]
 }
+
+func (vm *VM) StackTop() object.Object {
+	if vm.sp == 0 {
+		return nil
+	}
+	return vm.stack[vm.sp-1]
+}
+
 func (vm *VM) Run() error {
 	for ip := 0; ip < len(vm.instructions); ip++ {
 		op := code.Opcode(vm.instructions[ip])
@@ -64,11 +72,11 @@ func (vm *VM) Run() error {
 			if err != nil {
 				return err
 			}
-		// case code.OpEqual, code.OpNotEqual, code.OpGreaterThan:
-		// 	err := vm.executeComparison(op)
-		// 	if err != nil {
-		// 		return err
-		// 	}
+		case code.OpEqual, code.OpNotEqual, code.OpGreaterThan:
+			err := vm.executeComparison(op)
+			if err != nil {
+				return err
+			}
 		default:
 			return fmt.Errorf("unknown opcode: %d", op)
 		}
@@ -90,7 +98,47 @@ func (vm *VM) pop() object.Object {
 	vm.sp--
 	return o
 }
+func nativeBoolToBooleanObject(input bool) *object.Bool {
+	if input {
+		return True
+	}
+	return False
+}
 
+func (vm *VM) executeComparison(op code.Opcode) error {
+	right := vm.pop()
+	left := vm.pop()
+	if left.Type() == object.INTEGER && right.Type() == object.INTEGER {
+		return vm.executeIntegerComparison(op, left, right)
+	}
+
+	switch op {
+	case code.OpEqual:
+		return vm.push(nativeBoolToBooleanObject(right == left))
+	case code.OpNotEqual:
+		return vm.push(nativeBoolToBooleanObject(right != left))
+	default:
+		return fmt.Errorf("unknown operator: %d (%s %s)",
+			op, left.Type(), right.Type())
+	}
+}
+func (vm *VM) executeIntegerComparison(
+	op code.Opcode,
+	left, right object.Object,
+) error {
+	leftValue := left.(*object.Integer).Value
+	rightValue := right.(*object.Integer).Value
+	switch op {
+	case code.OpEqual:
+		return vm.push(nativeBoolToBooleanObject(rightValue == leftValue))
+	case code.OpNotEqual:
+		return vm.push(nativeBoolToBooleanObject(rightValue != leftValue))
+	case code.OpGreaterThan:
+		return vm.push(nativeBoolToBooleanObject(leftValue > rightValue))
+	default:
+		return fmt.Errorf("unknown operator: %d", op)
+	}
+}
 func (vm *VM) executeBinaryOperation(op code.Opcode) error {
 	right := vm.pop()
 	left := vm.pop()
@@ -122,6 +170,9 @@ func (vm *VM) executeBinaryIntegerOperation(
 	case code.OpMul:
 		result = leftValue * rightValue
 	case code.OpDiv:
+		if rightValue == 0 {
+			return fmt.Errorf("division by zero")
+		}
 		result = leftValue / rightValue
 	default:
 		return fmt.Errorf("unknown integer operator: %d", op)

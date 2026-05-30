@@ -112,16 +112,15 @@ func ModHttp() *object.Environment {
 			}
 
 			srv.HandleFunc(path.Value, func(w http.ResponseWriter, r *http.Request) {
-				fnEnv := fn.Env
-				fnEnv.SetConst("req", &object.BuiltinObject{Value: r})
-				fnEnv.SetConst("res", &object.BuiltinObject{Value: w})
-				result := Eval(fn.Body, fnEnv)
+
+				fn.Env.SetConst("req", &object.BuiltinObject{Value: r})
+				fn.Env.SetConst("res", &object.BuiltinObject{Value: w})
+				result := Eval(fn.Body, fn.Env)
 
 				if isGlobalError(result) || result.Type() == object.NULL {
 					return
 				}
 				w.Write([]byte(result.Inspect()))
-				fn.Env = nil
 			})
 			return NULL
 		},
