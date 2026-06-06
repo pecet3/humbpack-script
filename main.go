@@ -19,7 +19,6 @@ func main() {
 		repl.Start(os.Stdin, os.Stdout)
 		return
 	}
-
 	fileName := args[0]
 	fileNameLower := strings.ToLower(fileName)
 	if !strings.Contains(fileNameLower, ".hmbk") {

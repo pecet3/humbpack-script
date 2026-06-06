@@ -9,3 +9,86 @@ const hello = fn(x){
     print("hello" + x)
 }
 
+counter 20;
+
+liczba is 20;
+
+
+mut hello fn(x){
+    print("hello" + x)
+}
+
+const add = (x,y)=>{
+    return x + y;
+}
+
+mut hello ()=> {
+    print("hello")
+}
+
+liczba is mut 20
+
+liczba is const 20
+liczba is 20
+
+dodaj is (x,y)=>{
+    return x + y;
+}
+
+dodaj is func(x,y) {
+    return x + y;
+}
+os_target is "x86"
+
+last_operation is mut func(x,y) {
+    result is mut 0
+
+    if (x == 20){
+       result = (x + 20) * y
+    }else {
+       result = x * t
+    }
+
+    return result
+}
+
+message is mut "hello android"
+
+if (os_target == "x86") {
+    message = "hello PC"
+}
+
+
+
+
+liczba := 20
+mut liczba := 20
+
+dodaj := (x,y) => {
+    return x + y;
+}
+
+dodaj := func(x,y) {
+    return x + y;
+}
+
+os_target := "x86"
+
+last_operation is mut func(x,y) {
+    result is mut 0
+
+    if (x == 20){
+       result = (x + 20) * y
+    }else {
+       result = x * t
+    }
+
+    return result
+}
+
+message is mut "hello android"
+
+if (os_target == "x86") {
+    message = "hello PC"
+}
+

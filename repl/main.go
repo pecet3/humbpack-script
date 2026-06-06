@@ -39,7 +39,7 @@ const LOGO = cyan + `⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀�
 
 const LINE = brightBlack + "⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒⠒" + reset
 const INFO = white + italic + brightCyan +
-	bold + underline + `HmbK` + brightGreen + ` SCRIPT ` + reset +
+	bold + underline + `hmbk` + brightGreen + ` SCRIPT ` + reset +
 	bold + magenta + `REPL
 ` + reset
 
@@ -83,6 +83,11 @@ func Start(in io.Reader, out io.Writer) {
 	io.WriteString(out, LOGO+"\n"+INFO+LINE+"\n")
 
 	scanner := bufio.NewScanner(in)
+
+	constants := []object.Object{}
+	globals := make([]object.Object, vm.GlobalSize)
+	symbolTable := compiler.NewSymbolTable()
+
 	for {
 		io.WriteString(out, PROMPT)
 		scanned := scanner.Scan()
@@ -97,16 +102,18 @@ func Start(in io.Reader, out io.Writer) {
 			printParserErr(out, p.Errors())
 			continue
 		}
-		comp := compiler.New()
+		comp := compiler.NewWithState(symbolTable, constants)
 		err := comp.Compile(program)
 		if err != nil {
-			fmt.Fprintf(out, "Woops! Compilation failed:\n %s\n", err)
+			fmt.Fprintf(out, "Compilation failed:\n %s\n", err)
 			continue
 		}
-		machine := vm.New(comp.Bytecode())
+		code := comp.Bytecode()
+		constants = code.Constants
+		machine := vm.NewWithGlobalsStore(code, globals)
 		err = machine.Run()
 		if err != nil {
-			fmt.Fprintf(out, "Woops! Executing bytecode failed:\n %s\n", err)
+			fmt.Fprintf(out, "Executing bytecode failed:\n %s\n", err)
 			continue
 		}
 		stackTop := machine.LastPoppedStackElem()
