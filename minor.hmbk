@@ -9,6 +9,10 @@ const hello = fn(x){
     print("hello" + x)
 }
 
+const res = hello(10) iferr {
+    print(err)
+}
+
 counter 20;
 
 liczba is 20;

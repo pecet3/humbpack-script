@@ -9,26 +9,37 @@ import (
 	"strings"
 
 	"github.com/pecet3/hmbk-script/ast"
+	"github.com/pecet3/hmbk-script/code"
 )
 
 type ObjectType string
 
 const (
-	NUMBER        = "NUMBER"
-	INTEGER       = "INTEGER"
-	BOOL          = "BOOL"
-	STRING        = "STRING"
-	NULL          = "NULL"
-	RETURN_VALUE  = "RETURN_VALUE"
-	ERROR         = "ERROR"
-	GLOBAL_ERROR  = "GLOBAL_ERROR"
-	FUNCTION      = "FUNCTION"
-	BUILTIN       = "BUILTIN"
-	ARRAY         = "ARRAY"
-	HASH          = "HASH"
-	MODULE        = "MODULE"
-	BULTIN_OBJECT = "BUILTIN_OBJECT"
+	NUMBER            = "NUMBER"
+	INTEGER           = "INTEGER"
+	BOOL              = "BOOL"
+	STRING            = "STRING"
+	NULL              = "NULL"
+	RETURN_VALUE      = "RETURN_VALUE"
+	ERROR             = "ERROR"
+	GLOBAL_ERROR      = "GLOBAL_ERROR"
+	FUNCTION          = "FUNCTION"
+	BUILTIN           = "BUILTIN"
+	ARRAY             = "ARRAY"
+	HASH              = "HASH"
+	MODULE            = "MODULE"
+	BULTIN_OBJECT     = "BUILTIN_OBJECT"
+	COMPILED_FUNCTION = "COMPILED_FUNCTION"
 )
+
+type CompiledFunction struct {
+	Instructions code.Instructions
+}
+
+func (cf *CompiledFunction) Type() ObjectType { return COMPILED_FUNCTION }
+func (cf *CompiledFunction) Inspect() string {
+	return fmt.Sprintf("CompiledFunction[%p]", cf)
+}
 
 type BuiltinObject struct {
 	Value interface{}
